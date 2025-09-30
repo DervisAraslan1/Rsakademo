@@ -1,0 +1,130 @@
+<div class="content-header">
+    <h2 class="content-title">
+        <i class="fas fa-edit"></i>
+        Slider Düzenle: <%= slider.title %>
+    </h2>
+    <a href="/admin/sliders" class="btn-furniture" style="background: #6c757d; color: white;">
+        <i class="fas fa-arrow-left"></i>
+        Geri Dön
+    </a>
+</div>
+
+<form action="/admin/sliders/<%= slider.id %>/update" method="POST" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+                        <i class="fas fa-info-circle"></i> Slider Bilgileri
+                    </h5>
+
+                    <div class="mb-3">
+                        <label for="title" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                            Başlık <span style="color: red;">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="title" name="title" value="<%= slider.title %>"
+                            required style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="subtitle" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                            Alt Başlık
+                        </label>
+                        <textarea class="form-control" id="subtitle" name="subtitle" rows="3"
+                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"><%= slider.subtitle || '' %></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="button_text" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                                Buton Metni
+                            </label>
+                            <input type="text" class="form-control" id="button_text" name="button_text"
+                                value="<%= slider.button_text || '' %>"
+                                style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="button_link" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                                Buton Linki
+                            </label>
+                            <input type="text" class="form-control" id="button_link" name="button_link"
+                                value="<%= slider.button_link || '' %>"
+                                style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="order" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                            Sıralama <span style="color: red;">*</span>
+                        </label>
+                        <input type="number" class="form-control" id="order" name="order" value="<%= slider.order %>"
+                            required min="1" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+                        <i class="fas fa-image"></i> Slider Görseli
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; color: var(--walnut);">
+                            Mevcut Görsel
+                        </label>
+                        <div>
+                            <img src="<%= slider.image %>" alt="<%= slider.title %>"
+                                style="max-width: 100%; border-radius: 8px; border: 2px solid rgba(139, 69, 19, 0.2);">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                            Yeni Görsel Yükle
+                        </label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*"
+                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+                        <small class="text-muted">Yeni görsel yüklerseniz eskisi değiştirilecektir.</small>
+                    </div>
+
+                    <div id="imagePreview" style="display: none; margin-top: 15px;">
+                        <label class="form-label" style="font-weight: 600; color: var(--walnut);">Önizleme:</label>
+                        <img id="preview" src="" alt="Preview"
+                            style="max-width: 100%; border-radius: 8px; border: 2px solid rgba(139, 69, 19, 0.2);">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn-furniture btn-primary-furniture"
+                    style="width: 100%; justify-content: center;">
+                    <i class="fas fa-save"></i>
+                    Değişiklikleri Kaydet
+                </button>
+                <a href="/admin/sliders" class="btn-furniture"
+                    style="background: #6c757d; color: white; justify-content: center;">
+                    <i class="fas fa-times"></i>
+                    İptal
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.getElementById('image').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('preview').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>

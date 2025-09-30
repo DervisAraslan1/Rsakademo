@@ -2,7 +2,6 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const sharp = require('sharp');
 
 // Upload klasörlerini oluştur
 const ensureDirectoryExists = (dirPath) => {
@@ -17,14 +16,14 @@ const storage = multer.diskStorage({
         let uploadPath = 'public/uploads/';
 
         // Field name'e göre klasör belirle
-        if (file.fieldname.includes('product') || file.fieldname === 'images') {
+        if (file.fieldname.includes('site_') || file.fieldname.includes('default_')) {
+            uploadPath += 'settings/';
+        } else if (file.fieldname === 'images' || file.fieldname.includes('product')) {
             uploadPath += 'products/';
-        } else if (file.fieldname.includes('category')) {
+        } else if (file.fieldname === 'image' && req.path.includes('categories')) {
             uploadPath += 'categories/';
         } else if (file.fieldname.includes('slider')) {
             uploadPath += 'sliders/';
-        } else if (file.fieldname.includes('logo') || file.fieldname.includes('favicon')) {
-            uploadPath += 'misc/';
         } else {
             uploadPath += 'misc/';
         }
@@ -36,22 +35,21 @@ const storage = multer.diskStorage({
         // Unique filename oluştur
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname).toLowerCase();
-        const cleanName = file.fieldname.replace(/[^a-zA-Z0-9]/g, '');
-        cb(null, cleanName + '-' + uniqueSuffix + ext);
+        cb(null, file.fieldname + '-' + uniqueSuffix + ext);
     }
 });
 
 // File filter
 const fileFilter = (req, file, cb) => {
     // Sadece resim dosyalarını kabul et
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const allowedTypes = /jpeg|jpg|png|gif|webp|svg|ico/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    const mimetype = allowedTypes.test(file.mimetype) || file.mimetype === 'image/svg+xml' || file.mimetype === 'image/x-icon';
 
     if (mimetype && extname) {
         return cb(null, true);
     } else {
-        cb(new Error('Sadece resim dosyaları yüklenebilir! (JPG, PNG, GIF, WebP)'), false);
+        cb(new Error('Sadece resim dosyaları yüklenebilir!'), false);
     }
 };
 
@@ -65,79 +63,23 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-// Resim optimizasyonu middleware
-const optimizeImage = async (req, res, next) => {
-    if (!req.files && !req.file) {
-        return next();
-    }
-
-    try {
-        const files = req.files || [req.file];
-
-        for (const file of files) {
-            if (!file) continue;
-
-            const filePath = file.path;
-            const outputPath = filePath;
-
-            // Sharp ile resmi optimize et
-            await sharp(filePath)
-                .resize(1200, 1200, {
-                    fit: 'inside',
-                    withoutEnlargement: true
-                })
-                .jpeg({
-                    quality: 85,
-                    progressive: true
-                })
-                .png({
-                    quality: 85,
-                    progressive: true
-                })
-                .webp({
-                    quality: 85
-                })
-                .toFile(outputPath + '.optimized');
-
-            // Optimized dosyayı orijinalin üzerine taşı
-            fs.renameSync(outputPath + '.optimized', outputPath);
-        }
-
-        next();
-    } catch (error) {
-        console.error('Image optimization error:', error);
-        // Optimizasyon hatası olursa devam et (kritik değil)
-        next();
-    }
-};
-
 // Error handler
 const handleUploadError = (err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            const message = 'Dosya boyutu çok büyük. Maksimum 10MB.';
-            return req.xhr ?
-                res.status(400).json({ error: message }) :
-                res.redirect('back?error=' + encodeURIComponent(message));
+            return res.status(400).json({
+                error: 'Dosya boyutu çok büyük. Maksimum 10MB.'
+            });
         }
         if (err.code === 'LIMIT_FILE_COUNT') {
-            const message = 'Çok fazla dosya. Maksimum 10 dosya.';
-            return req.xhr ?
-                res.status(400).json({ error: message }) :
-                res.redirect('back?error=' + encodeURIComponent(message));
-        }
-        if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-            const message = 'Beklenmeyen dosya alanı.';
-            return req.xhr ?
-                res.status(400).json({ error: message }) :
-                res.redirect('back?error=' + encodeURIComponent(message));
+            return res.status(400).json({
+                error: 'Çok fazla dosya. Maksimum 10 dosya.'
+            });
         }
     }
 
-    if (err.message.includes('Sadece resim dosyaları')) {
-        return req.xhr ?
-            res.status(400).json({ error: err.message }) :
-            res.redirect('back?error=' + encodeURIComponent(err.message));
+    if (err.message === 'Sadece resim dosyaları yüklenebilir!') {
+        return res.status(400).json({ error: err.message });
     }
 
     next(err);
@@ -145,6 +87,5 @@ const handleUploadError = (err, req, res, next) => {
 
 module.exports = {
     uploadMiddleware: upload,
-    optimizeImage,
     handleUploadError
 };

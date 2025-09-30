@@ -9,6 +9,7 @@ router.get('/', productController.index);
 // Ürün detayı
 router.get('/:slug', productController.show);
 
+
 // Arama
 router.get('/search', productController.search);
 

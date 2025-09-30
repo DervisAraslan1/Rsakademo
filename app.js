@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 require('dotenv').config();
+const expressLayouts = require("express-ejs-layouts");
 
 // Database and Models
 const { syncDatabase } = require('./src/models');
@@ -23,6 +24,10 @@ const PORT = process.env.PORT || 3000;
 
 // Trust proxy for correct IP detection
 app.set('trust proxy', true);
+
+
+app.use(expressLayouts);
+app.set("layout", "admin/layout"); // default layout
 
 // View Engine
 app.set('view engine', 'ejs');
@@ -153,6 +158,7 @@ const startServer = async () => {
 };
 
 // Default Settings Creator
+// Default Settings Creator
 const createDefaultSettings = async () => {
     try {
         const { Settings } = require('./src/models');
@@ -175,11 +181,26 @@ const createDefaultSettings = async () => {
             }
         ];
 
+        // ✅ Sadece eksik olanları ekle
         for (const setting of defaultSettings) {
-            await Settings.setSetting(setting.key, setting.value, setting.type, setting.description);
+            const exists = await Settings.findOne({
+                where: { key: setting.key }
+            });
+
+            // Eğer ayar yoksa ekle
+            if (!exists) {
+                await Settings.create({
+                    key: setting.key,
+                    value: setting.value,
+                    type: setting.type,
+                    description: setting.description,
+                    visible: true
+                });
+                console.log(`✅ Created default setting: ${setting.key}`);
+            }
         }
 
-        console.log('✅ Default settings created');
+        console.log('✅ Default settings checked');
 
     } catch (error) {
         console.error('❌ Default settings creation failed:', error);

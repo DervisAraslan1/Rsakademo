@@ -1,0 +1,191 @@
+<div class="content-header">
+    <h2 class="content-title">
+        <i class="fas fa-plus"></i>
+        Yeni Ürün Ekle
+    </h2>
+    <a href="/admin/products" class="btn-furniture" style="background: #6c757d; color: white;">
+        <i class="fas fa-arrow-left"></i>
+        Geri Dön
+    </a>
+</div>
+
+<% if (typeof error !=='undefined' && error==='no_category' ) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i>
+        <strong>Hata!</strong> En az bir kategori seçmelisiniz.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+        <form action="/admin/products" method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Ürün Bilgileri -->
+                    <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+                        <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+                            <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+                                <i class="fas fa-info-circle"></i> Ürün Bilgileri
+                            </h5>
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                                    Ürün Adı <span style="color: red;">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="name" name="name" required
+                                    style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label"
+                                    style="font-weight: 600; color: var(--walnut);">
+                                    Açıklama
+                                </label>
+                                <textarea class="form-control" id="description" name="description" rows="5"
+                                    style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="width" class="form-label"
+                                        style="font-weight: 600; color: var(--walnut);">
+                                        Genişlik (cm)
+                                    </label>
+                                    <input type="number" class="form-control" id="width" name="width" step="0.1"
+                                        placeholder="Örn: 200"
+                                        style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="height" class="form-label"
+                                        style="font-weight: 600; color: var(--walnut);">
+                                        Yükseklik (cm)
+                                    </label>
+                                    <input type="number" class="form-control" id="height" name="height" step="0.1"
+                                        placeholder="Örn: 150"
+                                        style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="depth" class="form-label"
+                                        style="font-weight: 600; color: var(--walnut);">
+                                        Derinlik (cm)
+                                    </label>
+                                    <input type="number" class="form-control" id="depth" name="depth" step="0.1"
+                                        placeholder="Örn: 80"
+                                        style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ürün Görselleri -->
+                    <div class="card" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+                        <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+                            <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+                                <i class="fas fa-images"></i> Ürün Görselleri
+                            </h5>
+
+                            <div class="mb-3">
+                                <label for="images" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                                    Görseller (En fazla 5 adet)
+                                </label>
+                                <input type="file" class="form-control" id="images" name="images" multiple
+                                    accept="image/*"
+                                    style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+                                <small class="text-muted">JPG, PNG veya WebP formatında yükleyebilirsiniz.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Kategoriler -->
+                    <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+                        <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+                            <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+                                <i class="fas fa-tags"></i> Kategoriler <span style="color: red;">*</span>
+                            </h5>
+
+                            <% if (categories && categories.length> 0) { %>
+                                <div id="category-selection">
+                                    <% categories.forEach(category=> { %>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input category-checkbox" type="checkbox"
+                                                name="categories" value="<%= category.id %>"
+                                                id="cat-<%= category.id %>">
+                                            <label class="form-check-label" for="cat-<%= category.id %>"
+                                                style="font-weight: 500;">
+                                                <%= category.name %>
+                                            </label>
+                                        </div>
+                                        <% }) %>
+                                </div>
+                                <small class="text-danger d-none" id="category-error">En az bir kategori
+                                    seçmelisiniz!</small>
+                                <% } else { %>
+                                    <p class="text-muted">Henüz kategori yok</p>
+                                    <a href="/admin/categories/create" class="btn btn-sm btn-outline-primary">
+                                        Kategori Ekle
+                                    </a>
+                                    <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Butonlar -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn-furniture btn-primary-furniture"
+                            style="width: 100%; justify-content: center;">
+                            <i class="fas fa-save"></i>
+                            Ürünü Kaydet
+                        </button>
+                        <a href="/admin/products" class="btn-furniture"
+                            style="background: #6c757d; color: white; justify-content: center;">
+                            <i class="fas fa-times"></i>
+                            İptal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <script>
+            // Kategori validation
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.querySelector('form');
+                const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+                const categoryError = document.getElementById('category-error');
+
+                form.addEventListener('submit', function (e) {
+                    const isAnyCategoryChecked = Array.from(categoryCheckboxes).some(cb => cb.checked);
+
+                    if (!isAnyCategoryChecked) {
+                        e.preventDefault();
+                        categoryError.classList.remove('d-none');
+
+                        document.getElementById('category-selection').scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+
+                        return false;
+                    }
+
+                    categoryError.classList.add('d-none');
+                });
+
+                categoryCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function () {
+                        if (Array.from(categoryCheckboxes).some(cb => cb.checked)) {
+                            categoryError.classList.add('d-none');
+                        }
+                    });
+                });
+            });
+
+            // Görsel silme fonksiyonu (opsiyonel - backend'de implement edilmeli)
+            function removeImage(index) {
+                if (confirm('Bu görseli silmek istediğinizden emin misiniz?')) {
+                    // Backend'de görsel silme endpoint'i oluşturulmalı
+                    alert('Görsel silme özelliği yakında eklenecek');
+                }
+            }
+        </script>

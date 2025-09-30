@@ -1,0 +1,86 @@
+<div class="content-header">
+    <h2 class="content-title">
+        <i class="fas fa-images"></i>
+        Slider Yönetimi
+    </h2>
+    <a href="/admin/sliders/create" class="btn-furniture btn-primary-furniture">
+        <i class="fas fa-plus"></i>
+        Yeni Slider
+    </a>
+</div>
+
+<% if (sliders && sliders.length> 0) { %>
+    <div class="row">
+        <% sliders.forEach(slider=> { %>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100"
+                    style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px; overflow: hidden;">
+                    <div style="position: relative; height: 200px; overflow: hidden;">
+                        <img src="<%= slider.image %>" alt="<%= slider.title %>"
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                        <div
+                            style="position: absolute; top: 10px; left: 10px; background: var(--oak-brown); color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                            Sıra: <%= slider.order %>
+                        </div>
+                    </div>
+                    <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+                        <h5 class="card-title" style="color: var(--oak-brown); font-weight: 700; margin-bottom: 10px;">
+                            <%= slider.title %>
+                        </h5>
+                        <% if (slider.subtitle) { %>
+                            <p class="card-text" style="color: var(--walnut); font-size: 0.9rem; margin-bottom: 15px;">
+                                <%= slider.subtitle %>
+                            </p>
+                            <% } %>
+
+                                <% if (slider.button_text && slider.button_link) { %>
+                                    <div class="mb-3"
+                                        style="padding: 10px; background: rgba(139, 69, 19, 0.05); border-radius: 6px;">
+                                        <small style="color: var(--walnut); display: block; margin-bottom: 5px;">
+                                            <i class="fas fa-link"></i> Buton:
+                                        </small>
+                                        <strong style="color: var(--oak-brown);">
+                                            <%= slider.button_text %>
+                                        </strong>
+                                        <br>
+                                        <small style="color: var(--cedar); word-break: break-all;">
+                                            <%= slider.button_link %>
+                                        </small>
+                                    </div>
+                                    <% } %>
+
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <small style="color: var(--walnut);">
+                                                <i class="fas fa-calendar"></i>
+                                                <%= new Date(slider.createdAt).toLocaleDateString('tr-TR') %>
+                                            </small>
+                                            <div class="btn-group">
+                                                <a href="/admin/sliders/<%= slider.id %>/edit"
+                                                    class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="/admin/sliders/<%= slider.id %>/delete" method="POST"
+                                                    style="display: inline;">
+                                                    <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger btn-delete" title="Kaldır">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+    </div>
+    <% } else { %>
+        <div class="text-center py-5">
+            <i class="fas fa-images fa-5x mb-3" style="color: var(--walnut); opacity: 0.3;"></i>
+            <h4 style="color: var(--walnut);">Henüz slider yok</h4>
+            <p class="text-muted">Ana sayfa için slider eklemek için yukarıdaki butona tıklayın</p>
+            <a href="/admin/sliders/create" class="btn-furniture btn-primary-furniture mt-3">
+                <i class="fas fa-plus"></i>
+                İlk Slider'ı Ekle
+            </a>
+        </div>
+        <% } %>

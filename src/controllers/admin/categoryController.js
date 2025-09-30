@@ -1,4 +1,4 @@
-// src/controllers/admin/categoryController.js - Admin kategori controller
+// src/controllers/admin/categoryController.js
 const { Category, Product, Logs } = require('../../models');
 const { Op } = require('sequelize');
 const path = require('path');
@@ -8,58 +8,59 @@ const adminCategoryController = {
     // Kategori listesi
     index: async (req, res) => {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = 20;
-            const offset = (page - 1) * limit;
-            const search = req.query.search || '';
-
-            let whereCondition = {};
-            if (search) {
-                whereCondition.name = { [Op.like]: `%${search}%` };
-            }
-
-            const { count, rows: categories } = await Category.findAndCountAll({
-                where: whereCondition,
+            const categories = await Category.findAll({
+                where: { visible: 1 },
                 include: [{
                     model: Product,
                     as: 'products',
                     required: false,
-                    where: { visible: 1 },
-                    attributes: ['id']
+                    where: { visible: 1 }
                 }],
-                limit,
-                offset,
-                order: [['createdAt', 'DESC']]
+                order: [['name', 'ASC']]
             });
 
             // Her kategorideki ürün sayısını hesapla
-            const categoriesWithCount = categories.map(category => {
-                const categoryObj = category.toJSON();
-                categoryObj.productCount = categoryObj.products ? categoryObj.products.length : 0;
-                delete categoryObj.products; // products array'ini kaldır, sadece count'u kullan
-                return categoryObj;
+            const categoriesWithCount = categories.map(cat => {
+                const categoryData = cat.toJSON();
+                categoryData.productCount = cat.products ? cat.products.length : 0;
+                return categoryData;
             });
 
-            const totalPages = Math.ceil(count / limit);
+            // Success/error mesajları
+            let success = null;
+            let error = null;
+
+            if (req.query.success) {
+                success = req.query.success;
+            }
+            if (req.query.error) {
+                const errors = {
+                    'notfound': 'Kategori bulunamadı',
+                    'delete': 'Kategori kaldırılırken hata oluştu',
+                    'create': 'Kategori oluşturulurken hata oluştu',
+                    'update': 'Kategori güncellenirken hata oluştu'
+                };
+                error = errors[req.query.error] || 'Bir hata oluştu';
+            }
 
             res.render('admin/categories/index', {
                 title: 'Kategori Yönetimi',
                 layout: 'admin/layout',
+                currentPage: 'categories',
                 categories: categoriesWithCount,
-                search,
-                pagination: {
-                    currentPage: page,
-                    totalPages,
-                    hasNext: page < totalPages,
-                    hasPrev: page > 1
-                }
+                success,
+                error,
+                admin: req.session.admin
             });
 
         } catch (error) {
             console.error('Admin categories index error:', error);
             res.status(500).render('admin/error', {
                 title: 'Hata',
-                message: 'Kategoriler yüklenirken hata oluştu'
+                layout: 'admin/layout',
+                currentPage: 'categories',
+                message: 'Kategoriler yüklenirken hata oluştu',
+                admin: req.session.admin
             });
         }
     },
@@ -69,13 +70,19 @@ const adminCategoryController = {
         try {
             res.render('admin/categories/create', {
                 title: 'Yeni Kategori Ekle',
-                layout: 'admin/layout'
+                layout: 'admin/layout',
+                currentPage: 'categories',
+                admin: req.session.admin
             });
+
         } catch (error) {
             console.error('Admin category create page error:', error);
             res.status(500).render('admin/error', {
                 title: 'Hata',
-                message: 'Sayfa yüklenirken hata oluştu'
+                layout: 'admin/layout',
+                currentPage: 'categories',
+                message: 'Sayfa yüklenirken hata oluştu',
+                admin: req.session.admin
             });
         }
     },
@@ -83,10 +90,10 @@ const adminCategoryController = {
     // Kategori ekleme işlemi
     store: async (req, res) => {
         try {
-            const { name } = req.body;
+            const { name, description } = req.body;
 
             // Slug oluştur
-            const slug = name.toLowerCase()
+            let slug = name.toLowerCase()
                 .replace(/ş/g, 's')
                 .replace(/ğ/g, 'g')
                 .replace(/ü/g, 'u')
@@ -97,26 +104,47 @@ const adminCategoryController = {
                 .replace(/-+/g, '-')
                 .replace(/^-|-$/g, '');
 
-            // Resim dosyasını işle
-            let image = null;
-            if (req.file) {
-                image = `/uploads/categories/${req.file.filename}`;
+            // Slug kontrolü
+            const existingCategory = await Category.findOne({
+                where: {
+                    slug: slug,
+                    visible: 1
+                }
+            });
+
+            if (existingCategory) {
+                let counter = 2;
+                let tempSlug = `${slug}-${counter}`;
+
+                while (await Category.findOne({
+                    where: {
+                        slug: tempSlug,
+                        visible: 1
+                    }
+                })) {
+                    counter++;
+                    tempSlug = `${slug}-${counter}`;
+                }
+
+                slug = tempSlug;
             }
 
-            // Kategoryi oluştur
+            // Kategoriyi oluştur
             const category = await Category.create({
                 name,
                 slug,
-                image
+                description: description || null
             });
 
             // Log kaydı
             await Logs.logAction(Logs.ACTIONS.CREATE, 'categories', category.id, null, category.toJSON(), req);
 
-            res.redirect('/admin/categories?success=created');
+            // ✅ Kategoriler sayfasına yönlendir
+            res.redirect('/admin/categories?success=' + encodeURIComponent('Kategori başarıyla eklendi!'));
 
         } catch (error) {
             console.error('Admin category store error:', error);
+            // ✅ Hata durumunda kategori oluşturma sayfasına dön
             res.redirect('/admin/categories/create?error=create');
         }
     },
@@ -127,22 +155,25 @@ const adminCategoryController = {
             const category = await Category.findByPk(req.params.id);
 
             if (!category) {
-                return res.status(404).render('admin/404', {
-                    title: 'Kategori Bulunamadı'
-                });
+                return res.redirect('/admin/categories?error=notfound');
             }
 
             res.render('admin/categories/edit', {
                 title: `Düzenle: ${category.name}`,
                 layout: 'admin/layout',
-                category
+                currentPage: 'categories',
+                category,
+                admin: req.session.admin
             });
 
         } catch (error) {
             console.error('Admin category edit error:', error);
             res.status(500).render('admin/error', {
                 title: 'Hata',
-                message: 'Kategori düzenleme sayfası yüklenirken hata oluştu'
+                layout: 'admin/layout',
+                currentPage: 'categories',
+                message: 'Kategori düzenleme sayfası yüklenirken hata oluştu',
+                admin: req.session.admin
             });
         }
     },
@@ -151,18 +182,17 @@ const adminCategoryController = {
     update: async (req, res) => {
         try {
             const categoryId = req.params.id;
-            const { name } = req.body;
+            const { name, description } = req.body;
 
             const category = await Category.findByPk(categoryId);
             if (!category) {
                 return res.redirect('/admin/categories?error=notfound');
             }
 
-            // Eski değerleri sakla
             const oldValues = category.toJSON();
 
             // Slug güncelle
-            const slug = name.toLowerCase()
+            let slug = name.toLowerCase()
                 .replace(/ş/g, 's')
                 .replace(/ğ/g, 'g')
                 .replace(/ü/g, 'u')
@@ -173,23 +203,44 @@ const adminCategoryController = {
                 .replace(/-+/g, '-')
                 .replace(/^-|-$/g, '');
 
-            // Yeni resim varsa güncelle
-            let image = category.image;
-            if (req.file) {
-                image = `/uploads/categories/${req.file.filename}`;
+            // Slug kontrolü
+            const existingCategory = await Category.findOne({
+                where: {
+                    slug: slug,
+                    visible: 1,
+                    id: { [Op.ne]: categoryId }
+                }
+            });
+
+            if (existingCategory) {
+                let counter = 2;
+                let tempSlug = `${slug}-${counter}`;
+
+                while (await Category.findOne({
+                    where: {
+                        slug: tempSlug,
+                        visible: 1,
+                        id: { [Op.ne]: categoryId }
+                    }
+                })) {
+                    counter++;
+                    tempSlug = `${slug}-${counter}`;
+                }
+
+                slug = tempSlug;
             }
 
             // Kategoriyi güncelle
             await category.update({
                 name,
                 slug,
-                image
+                description
             });
 
             // Log kaydı
             await Logs.logAction(Logs.ACTIONS.UPDATE, 'categories', category.id, oldValues, category.toJSON(), req);
 
-            res.redirect('/admin/categories?success=updated');
+            res.redirect('/admin/categories?success=' + encodeURIComponent('Kategori başarıyla güncellendi!'));
 
         } catch (error) {
             console.error('Admin category update error:', error);
@@ -198,56 +249,117 @@ const adminCategoryController = {
     },
 
     // Kategori silme (soft delete)
+    deleteForm: async (req, res) => {
+        try {
+            const category = await Category.findByPk(req.params.id, {
+                include: [{
+                    model: Product,
+                    as: 'products',
+                    required: false,
+                    where: { visible: 1 }
+                }]
+            });
+
+            if (!category) {
+                return res.redirect('/admin/categories?error=notfound');
+            }
+
+            // Diğer kategorileri getir (silinecek olan hariç)
+            const otherCategories = await Category.findAll({
+                where: {
+                    visible: 1,
+                    id: { [Op.ne]: req.params.id }
+                },
+                order: [['name', 'ASC']]
+            });
+
+            const productCount = category.products ? category.products.length : 0;
+
+            res.render('admin/categories/delete', {
+                title: `Kategori Sil: ${category.name}`,
+                layout: 'admin/layout',
+                currentPage: 'categories',
+                category: category.toJSON(),
+                productCount,
+                otherCategories,
+                admin: req.session.admin
+            });
+
+        } catch (error) {
+            console.error('Admin category delete form error:', error);
+            res.redirect('/admin/categories?error=notfound');
+        }
+    },
+
+    // Kategori silme işlemi
     destroy: async (req, res) => {
         try {
             const categoryId = req.params.id;
+            const { move_to_category } = req.body;
 
-            const category = await Category.findByPk(categoryId);
-            if (!category) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Kategori bulunamadı'
-                });
-            }
-
-            // Bu kategorideki aktif ürün sayısını kontrol et
-            const productCount = await Product.count({
+            const category = await Category.findByPk(categoryId, {
                 include: [{
-                    model: Category,
-                    as: 'categories',
-                    where: { id: categoryId },
-                    required: true
-                }],
-                where: { visible: 1 }
+                    model: Product,
+                    as: 'products',
+                    required: false,
+                    where: { visible: 1 }
+                }]
             });
 
-            if (productCount > 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Bu kategoride ${productCount} adet aktif ürün var. Önce ürünleri başka kategorilere taşıyın.`
-                });
+            if (!category) {
+                return res.redirect('/admin/categories?error=notfound');
+            }
+
+            const productCount = category.products ? category.products.length : 0;
+
+            // Eğer ürün varsa ve taşınacak kategori seçilmemişse hata
+            if (productCount > 0 && !move_to_category) {
+                return res.redirect(`/admin/categories/${categoryId}/delete?error=no_target`);
             }
 
             // Eski değerleri sakla
             const oldValues = category.toJSON();
 
-            // Soft delete (visible = 0)
+            // Ürünleri yeni kategoriye taşı
+            if (productCount > 0 && move_to_category) {
+                const targetCategory = await Category.findByPk(move_to_category);
+
+                if (!targetCategory) {
+                    return res.redirect(`/admin/categories/${categoryId}/delete?error=invalid_target`);
+                }
+
+                // Tüm ürünleri yeni kategoriye taşı
+                for (const product of category.products) {
+                    // Mevcut kategorileri al
+                    const currentCategories = await product.getCategories();
+
+                    // Silinecek kategoriyi çıkar, yeni kategoriyi ekle
+                    const newCategories = currentCategories
+                        .filter(cat => cat.id !== parseInt(categoryId))
+                        .concat([targetCategory]);
+
+                    await product.setCategories(newCategories);
+                }
+            }
+
+            // Kategoriyi soft delete
             await category.update({ visible: 0 });
 
             // Log kaydı
-            await Logs.logAction(Logs.ACTIONS.DELETE, 'categories', category.id, oldValues, { visible: 0 }, req);
+            await Logs.logAction(
+                Logs.ACTIONS.DELETE,
+                'categories',
+                category.id,
+                oldValues,
+                { visible: 0, movedTo: move_to_category || null },
+                req
+            );
 
-            res.json({
-                success: true,
-                message: 'Kategori başarıyla kaldırıldı'
-            });
+            res.redirect('/admin/categories?success=' + encodeURIComponent(`Kategori silindi${productCount > 0 ? ` ve ${productCount} ürün taşındı` : ''}`));
 
         } catch (error) {
             console.error('Admin category destroy error:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Kategori kaldırılırken hata oluştu'
-            });
+            res.redirect('/admin/categories?error=delete');
         }
     }
 };

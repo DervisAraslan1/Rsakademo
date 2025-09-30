@@ -80,4 +80,39 @@ Logs.ACTIONS = {
     LOGOUT: 'LOGOUT'
 };
 
+// Logs model'ine eklenecek metodlar
+Logs.prototype.getDescription = function () {
+    const actions = {
+        'create': 'eklendi',
+        'update': 'güncellendi',
+        'delete': 'kaldırıldı'
+    };
+
+    const tables = {
+        'products': 'Ürün',
+        'categories': 'Kategori',
+        'sliders': 'Slider',
+        'settings': 'Ayar'
+    };
+
+    const action = actions[this.action] || this.action;
+    const table = tables[this.table] || this.table;
+
+    return `${table} ${action}`;
+};
+
+Logs.prototype.getTimeAgo = function () {
+    const now = new Date();
+    const diff = now - this.createdAt;
+
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} gün önce`;
+    if (hours > 0) return `${hours} saat önce`;
+    if (minutes > 0) return `${minutes} dakika önce`;
+    return 'Az önce';
+};
+
 module.exports = Logs;

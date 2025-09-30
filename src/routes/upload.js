@@ -16,12 +16,15 @@ const storage = multer.diskStorage({
         let uploadPath = 'public/uploads/';
 
         // Field name'e göre klasör belirle
-        if (file.fieldname.includes('product')) {
+        if (file.fieldname === 'images' || file.fieldname.includes('product')) {
             uploadPath += 'products/';
-        } else if (file.fieldname.includes('category')) {
+        } else if (file.fieldname === 'image' && req.path.includes('categories')) {
             uploadPath += 'categories/';
         } else if (file.fieldname.includes('slider')) {
             uploadPath += 'sliders/';
+        } else if (file.fieldname.includes('site_') || file.fieldname.includes('default_')) {
+            // ✅ Settings için (site_logo, site_favicon, default_product_image)
+            uploadPath += 'settings/';
         } else {
             uploadPath += 'misc/';
         }
@@ -40,9 +43,9 @@ const storage = multer.diskStorage({
 // File filter
 const fileFilter = (req, file, cb) => {
     // Sadece resim dosyalarını kabul et
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const allowedTypes = /jpeg|jpg|png|gif|webp|svg|ico/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    const mimetype = allowedTypes.test(file.mimetype) || file.mimetype === 'image/svg+xml' || file.mimetype === 'image/x-icon';
 
     if (mimetype && extname) {
         return cb(null, true);

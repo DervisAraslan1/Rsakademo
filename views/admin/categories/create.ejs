@@ -1,0 +1,57 @@
+<div class="content-header">
+    <h2 class="content-title">
+        <i class="fas fa-plus"></i>
+        Yeni Kategori Ekle
+    </h2>
+    <a href="/admin/categories" class="btn-furniture" style="background: #6c757d; color: white;">
+        <i class="fas fa-arrow-left"></i>
+        Geri Dön
+    </a>
+</div>
+
+<form action="/admin/categories" method="POST">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+                        <i class="fas fa-info-circle"></i> Kategori Bilgileri
+                    </h5>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                            Kategori Adı <span style="color: red;">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" required
+                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"
+                            placeholder="Örn: Oturma Grupları">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                            Açıklama
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="4"
+                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"
+                            placeholder="Kategori hakkında kısa açıklama..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn-furniture btn-primary-furniture"
+                    style="width: 100%; justify-content: center;">
+                    <i class="fas fa-save"></i>
+                    Kategoriyi Kaydet
+                </button>
+                <a href="/admin/categories" class="btn-furniture"
+                    style="background: #6c757d; color: white; justify-content: center;">
+                    <i class="fas fa-times"></i>
+                    İptal
+                </a>
+            </div>
+        </div>
+    </div>
+</form>

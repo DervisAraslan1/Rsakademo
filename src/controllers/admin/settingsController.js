@@ -1,126 +1,147 @@
-
-// src/controllers/admin/settingsController.js - Admin ayarlar controller
+// src/controllers/admin/settingsController.js
 const { Settings, Logs } = require('../../models');
+const path = require('path');
+const fs = require('fs');
 
 const adminSettingsController = {
-    // Ayarlar sayfası
+    // Settings sayfası
     index: async (req, res) => {
         try {
-            // Tüm ayarları getir
-            const allSettings = await Settings.findAll({
-                where: { visible: 1 },
-                order: [['key', 'ASC']]
+            // Tüm ayarları çek
+            const settingsArray = await Settings.findAll();
+
+            // Ayarları key-value objesine çevir
+            const settings = {};
+            settingsArray.forEach(setting => {
+                settings[setting.key] = setting.value;
             });
 
-            // Ayarları kategorilere göre grupla
-            const settingsObj = {};
-            allSettings.forEach(setting => {
-                let value = setting.value;
+            // Success/error mesajları
+            let success = null;
+            let error = null;
 
-                // Type'a göre değeri parse et
-                if (setting.type === 'json') {
-                    try {
-                        value = JSON.parse(value);
-                    } catch (e) {
-                        value = {};
-                    }
-                } else if (setting.type === 'boolean') {
-                    value = value === 'true' || value === '1';
-                } else if (setting.type === 'number') {
-                    value = parseFloat(value) || 0;
-                }
-
-                settingsObj[setting.key] = {
-                    value: value,
-                    type: setting.type,
-                    description: setting.description
-                };
-            });
+            if (req.query.success) {
+                success = req.query.success;
+            }
+            if (req.query.error) {
+                error = 'Ayarlar güncellenirken hata oluştu';
+            }
 
             res.render('admin/settings/index', {
                 title: 'Site Ayarları',
                 layout: 'admin/layout',
-                settings: settingsObj
+                currentPage: 'settings',
+                settings,
+                success,
+                error,
+                admin: req.session.admin
             });
 
         } catch (error) {
             console.error('Admin settings index error:', error);
             res.status(500).render('admin/error', {
                 title: 'Hata',
-                message: 'Ayarlar yüklenirken hata oluştu'
+                layout: 'admin/layout',
+                currentPage: 'settings',
+                message: 'Ayarlar yüklenirken hata oluştu',
+                admin: req.session.admin
             });
         }
     },
 
-    // Ayarları güncelleme
     update: async (req, res) => {
         try {
-            const formData = req.body;
-            const files = req.files || {};
+            const {
+                site_name,
+                site_description,
+                site_keywords,
+                contact_email,
+                contact_phone,
+                contact_address,
+                social_facebook,
+                social_instagram,
+                social_twitter,
+                social_linkedin
+            } = req.body;
 
-            // Her form alanını işle
-            for (const [key, value] of Object.entries(formData)) {
-                if (key === '_csrf') continue; // CSRF token'ı atla
+            // Ayarları güncelle veya oluştur
+            const settingsToUpdate = {
+                site_name,
+                site_description,
+                site_keywords,
+                contact_email,
+                contact_phone,
+                contact_address,
+                social_facebook,
+                social_instagram,
+                social_twitter,
+                social_linkedin
+            };
 
-                // Mevcut ayarı bul
-                const existingSetting = await Settings.findOne({ where: { key } });
-                const oldValue = existingSetting ? existingSetting.value : null;
-
-                // Ayar tipini belirle
-                let settingType = 'text';
-                if (key.includes('_count') || key.includes('_limit')) {
-                    settingType = 'number';
-                } else if (key.includes('_mode') || key.includes('_enabled')) {
-                    settingType = 'boolean';
-                } else if (key === 'social_links') {
-                    settingType = 'json';
-                }
-
-                // JSON ayarları için özel işlem
-                let processedValue = value;
-                if (settingType === 'json' && key === 'social_links') {
-                    // Social links alanları form'dan geliyorsa birleştir
-                    const socialLinks = {
-                        facebook: formData['social_facebook'] || '',
-                        instagram: formData['social_instagram'] || '',
-                        twitter: formData['social_twitter'] || '',
-                        youtube: formData['social_youtube'] || ''
-                    };
-                    processedValue = JSON.stringify(socialLinks);
-                } else if (settingType === 'boolean') {
-                    processedValue = value ? 'true' : 'false';
-                }
-
-                // Ayarı kaydet veya güncelle
-                await Settings.setSetting(key, processedValue, settingType);
-
-                // Log kaydı
-                if (oldValue !== processedValue) {
-                    await Logs.logAction(
-                        Logs.ACTIONS.UPDATE,
-                        'settings',
-                        null,
-                        { [key]: oldValue },
-                        { [key]: processedValue },
-                        req
-                    );
+            for (const [key, value] of Object.entries(settingsToUpdate)) {
+                if (value !== undefined) {
+                    await Settings.upsert({
+                        key,
+                        value: value || ''
+                    });
                 }
             }
 
-            // File uploads'ları işle
-            if (files.site_logo && files.site_logo[0]) {
-                const logoPath = `/uploads/misc/${files.site_logo[0].filename}`;
-                await Settings.setSetting('site_logo', logoPath, 'image', 'Site logosu');
-                await Logs.logAction(Logs.ACTIONS.UPDATE, 'settings', null, null, { site_logo: logoPath }, req);
+            // Logo, favicon ve default product image işle
+            if (req.files) {
+                // Site Logo
+                if (req.files.site_logo && req.files.site_logo.length > 0) {
+                    const logoPath = `/uploads/settings/${req.files.site_logo[0].filename}`;
+                    const oldLogo = await Settings.findOne({ where: { key: 'site_logo' } });
+                    if (oldLogo && oldLogo.value) {
+                        const oldLogoPath = path.join(__dirname, '../../public', oldLogo.value);
+                        if (fs.existsSync(oldLogoPath)) {
+                            fs.unlinkSync(oldLogoPath);
+                        }
+                    }
+                    await Settings.upsert({
+                        key: 'site_logo',
+                        value: logoPath
+                    });
+                }
+
+                // Favicon
+                if (req.files.site_favicon && req.files.site_favicon.length > 0) {
+                    const faviconPath = `/uploads/settings/${req.files.site_favicon[0].filename}`;
+                    const oldFavicon = await Settings.findOne({ where: { key: 'site_favicon' } });
+                    if (oldFavicon && oldFavicon.value) {
+                        const oldFaviconPath = path.join(__dirname, '../../public', oldFavicon.value);
+                        if (fs.existsSync(oldFaviconPath)) {
+                            fs.unlinkSync(oldFaviconPath);
+                        }
+                    }
+                    await Settings.upsert({
+                        key: 'site_favicon',
+                        value: faviconPath
+                    });
+                }
+
+                // ✅ Default Product Image
+                if (req.files.default_product_image && req.files.default_product_image.length > 0) {
+                    const imagePath = `/uploads/settings/${req.files.default_product_image[0].filename}`;
+                    const oldImage = await Settings.findOne({ where: { key: 'default_product_image' } });
+                    if (oldImage && oldImage.value) {
+                        const oldImagePath = path.join(__dirname, '../../public', oldImage.value);
+                        if (fs.existsSync(oldImagePath)) {
+                            fs.unlinkSync(oldImagePath);
+                        }
+                    }
+                    await Settings.upsert({
+                        key: 'default_product_image',
+                        value: imagePath
+                    });
+                }
             }
 
-            if (files.site_favicon && files.site_favicon[0]) {
-                const faviconPath = `/uploads/misc/${files.site_favicon[0].filename}`;
-                await Settings.setSetting('site_favicon', faviconPath, 'image', 'Site favicon');
-                await Logs.logAction(Logs.ACTIONS.UPDATE, 'settings', null, null, { site_favicon: faviconPath }, req);
-            }
+            // Log kaydı
+            await Logs.logAction(Logs.ACTIONS.UPDATE, 'settings', null, null, settingsToUpdate, req);
 
-            res.redirect('/admin/settings?success=updated');
+            res.redirect('/admin/settings?success=' + encodeURIComponent('Ayarlar başarıyla güncellendi!'));
 
         } catch (error) {
             console.error('Admin settings update error:', error);

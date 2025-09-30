@@ -15,7 +15,7 @@ const Category = sequelize.define('Category', {
     slug: {
         type: DataTypes.STRING(120),
         allowNull: false,
-        unique: true
+        //unique: true
     },
     image: {
         type: DataTypes.STRING(255),

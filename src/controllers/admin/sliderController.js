@@ -1,26 +1,52 @@
-// src/controllers/admin/sliderController.js - Admin slider controller
+// src/controllers/admin/sliderController.js
 const { Slider, Logs } = require('../../models');
-const { Op } = require('sequelize');
+const path = require('path');
+const fs = require('fs');
 
 const adminSliderController = {
     // Slider listesi
     index: async (req, res) => {
         try {
             const sliders = await Slider.findAll({
+                where: { visible: 1 },
                 order: [['order', 'ASC'], ['createdAt', 'DESC']]
             });
+
+            // Success/error mesajları
+            let success = null;
+            let error = null;
+
+            if (req.query.success) {
+                success = req.query.success;
+            }
+            if (req.query.error) {
+                const errors = {
+                    'notfound': 'Slider bulunamadı',
+                    'delete': 'Slider kaldırılırken hata oluştu',
+                    'create': 'Slider oluşturulurken hata oluştu',
+                    'update': 'Slider güncellenirken hata oluştu'
+                };
+                error = errors[req.query.error] || 'Bir hata oluştu';
+            }
 
             res.render('admin/sliders/index', {
                 title: 'Slider Yönetimi',
                 layout: 'admin/layout',
-                sliders
+                currentPage: 'sliders',
+                sliders,
+                success,
+                error,
+                admin: req.session.admin
             });
 
         } catch (error) {
             console.error('Admin sliders index error:', error);
             res.status(500).render('admin/error', {
                 title: 'Hata',
-                message: 'Slider\'lar yüklenirken hata oluştu'
+                layout: 'admin/layout',
+                currentPage: 'sliders',
+                message: 'Sliderlar yüklenirken hata oluştu',
+                admin: req.session.admin
             });
         }
     },
@@ -28,20 +54,25 @@ const adminSliderController = {
     // Slider ekleme sayfası
     create: async (req, res) => {
         try {
-            // En yüksek order değerini bul (yeni slide en sona eklenecek)
-            const maxOrder = await Slider.max('order') || 0;
+            // Mevcut slider sayısını al (sıralama için)
+            const sliderCount = await Slider.count({ where: { visible: 1 } });
 
             res.render('admin/sliders/create', {
                 title: 'Yeni Slider Ekle',
                 layout: 'admin/layout',
-                nextOrder: maxOrder + 1
+                currentPage: 'sliders',
+                nextOrder: sliderCount + 1,
+                admin: req.session.admin
             });
 
         } catch (error) {
             console.error('Admin slider create page error:', error);
             res.status(500).render('admin/error', {
                 title: 'Hata',
-                message: 'Sayfa yüklenirken hata oluştu'
+                layout: 'admin/layout',
+                currentPage: 'sliders',
+                message: 'Sayfa yüklenirken hata oluştu',
+                admin: req.session.admin
             });
         }
     },
@@ -49,29 +80,29 @@ const adminSliderController = {
     // Slider ekleme işlemi
     store: async (req, res) => {
         try {
-            const { title, subtitle, link, button_text, order } = req.body;
+            const { title, subtitle, button_text, button_link, order } = req.body;
 
-            // Resim dosyası zorunlu
+            // Resim dosyasını işle
             if (!req.file) {
-                return res.redirect('/admin/sliders/create?error=image_required');
+                return res.redirect('/admin/sliders/create?error=create');
             }
 
             const image = `/uploads/sliders/${req.file.filename}`;
 
-            // Slider oluştur
+            // Slider'ı oluştur
             const slider = await Slider.create({
                 title,
                 subtitle,
                 image,
-                link,
-                button_text: button_text || 'Daha Fazla',
-                order: parseInt(order) || 0
+                button_text,
+                button_link,
+                order: parseInt(order) || 1
             });
 
             // Log kaydı
             await Logs.logAction(Logs.ACTIONS.CREATE, 'sliders', slider.id, null, slider.toJSON(), req);
 
-            res.redirect('/admin/sliders?success=created');
+            res.redirect('/admin/sliders?success=' + encodeURIComponent('Slider başarıyla eklendi!'));
 
         } catch (error) {
             console.error('Admin slider store error:', error);
@@ -85,22 +116,25 @@ const adminSliderController = {
             const slider = await Slider.findByPk(req.params.id);
 
             if (!slider) {
-                return res.status(404).render('admin/404', {
-                    title: 'Slider Bulunamadı'
-                });
+                return res.redirect('/admin/sliders?error=notfound');
             }
 
             res.render('admin/sliders/edit', {
-                title: `Düzenle: ${slider.title}`,
+                title: `Slider Düzenle: ${slider.title}`,
                 layout: 'admin/layout',
-                slider
+                currentPage: 'sliders',
+                slider,
+                admin: req.session.admin
             });
 
         } catch (error) {
             console.error('Admin slider edit error:', error);
             res.status(500).render('admin/error', {
                 title: 'Hata',
-                message: 'Slider düzenleme sayfası yüklenirken hata oluştu'
+                layout: 'admin/layout',
+                currentPage: 'sliders',
+                message: 'Slider düzenleme sayfası yüklenirken hata oluştu',
+                admin: req.session.admin
             });
         }
     },
@@ -109,7 +143,7 @@ const adminSliderController = {
     update: async (req, res) => {
         try {
             const sliderId = req.params.id;
-            const { title, subtitle, link, button_text, order } = req.body;
+            const { title, subtitle, button_text, button_link, order } = req.body;
 
             const slider = await Slider.findByPk(sliderId);
             if (!slider) {
@@ -119,9 +153,16 @@ const adminSliderController = {
             // Eski değerleri sakla
             const oldValues = slider.toJSON();
 
-            // Yeni resim varsa güncelle, yoksa eskisini koru
+            // Yeni resim varsa güncelle
             let image = slider.image;
             if (req.file) {
+                // Eski resmi sil
+                if (slider.image) {
+                    const oldImagePath = path.join(__dirname, '../../public', slider.image);
+                    if (fs.existsSync(oldImagePath)) {
+                        fs.unlinkSync(oldImagePath);
+                    }
+                }
                 image = `/uploads/sliders/${req.file.filename}`;
             }
 
@@ -130,15 +171,15 @@ const adminSliderController = {
                 title,
                 subtitle,
                 image,
-                link,
-                button_text: button_text || 'Daha Fazla',
-                order: parseInt(order) || 0
+                button_text,
+                button_link,
+                order: parseInt(order) || 1
             });
 
             // Log kaydı
             await Logs.logAction(Logs.ACTIONS.UPDATE, 'sliders', slider.id, oldValues, slider.toJSON(), req);
 
-            res.redirect('/admin/sliders?success=updated');
+            res.redirect('/admin/sliders?success=' + encodeURIComponent('Slider başarıyla güncellendi!'));
 
         } catch (error) {
             console.error('Admin slider update error:', error);
@@ -153,32 +194,23 @@ const adminSliderController = {
 
             const slider = await Slider.findByPk(sliderId);
             if (!slider) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Slider bulunamadı'
-                });
+                return res.redirect('/admin/sliders?error=notfound');
             }
 
             // Eski değerleri sakla
             const oldValues = slider.toJSON();
 
-            // Soft delete (visible = 0)
+            // Soft delete
             await slider.update({ visible: 0 });
 
             // Log kaydı
             await Logs.logAction(Logs.ACTIONS.DELETE, 'sliders', slider.id, oldValues, { visible: 0 }, req);
 
-            res.json({
-                success: true,
-                message: 'Slider başarıyla kaldırıldı'
-            });
+            res.redirect('/admin/sliders?success=' + encodeURIComponent('Slider başarıyla kaldırıldı!'));
 
         } catch (error) {
             console.error('Admin slider destroy error:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Slider kaldırılırken hata oluştu'
-            });
+            res.redirect('/admin/sliders?error=delete');
         }
     },
 
@@ -196,18 +228,11 @@ const adminSliderController = {
                 });
             }
 
-            // Eski değerleri sakla
-            const oldValues = slider.toJSON();
-
-            // Order güncelle
-            await slider.update({ order: parseInt(order) || 0 });
-
-            // Log kaydı
-            await Logs.logAction(Logs.ACTIONS.UPDATE, 'sliders', slider.id, oldValues, { order: slider.order }, req);
+            await slider.update({ order: parseInt(order) });
 
             res.json({
                 success: true,
-                message: 'Slider sıralaması güncellendi'
+                message: 'Sıralama güncellendi'
             });
 
         } catch (error) {
