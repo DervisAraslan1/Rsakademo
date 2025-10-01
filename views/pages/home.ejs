@@ -1,0 +1,84 @@
+<!-- src/views/pages/home.ejs -->
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="<%= settings?.site_favicon || '/favicon.ico' %>">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= settings?.site_name || 'Mobilya Dünyası' %></title>
+  <link rel="stylesheet" href="/css/home.css">
+</head>
+
+<body>
+  <div class="page-container">
+    <!-- Sol Menü -->
+    <aside class="left-sidebar">
+      <div class="logo">
+        <img src="<%= settings?.site_logo || '/images/logo.png' %>" alt="Site Logo">
+      </div>
+
+      <!-- Kategoriler -->
+      <nav class="categories-nav">
+        <% categories.forEach(category => { %>
+        <div class="category-group">
+          <div class="category-header">
+            <a href="/categories/<%= category.slug %>" class="category-main">
+              <%= category.name %>
+            </a>
+            <% if (category.children && category.children.length > 0) { %>
+            <span class="category-toggle"></span>
+            <% } %>
+          </div>
+
+          <% if (category.children && category.children.length > 0) { %>
+          <div class="category-children">
+            <% category.children.forEach(child => { %>
+            <a href="/categories/<%= child.slug %>" class="category-child">
+              <%= child.name %>
+            </a>
+            <% }) %>
+          </div>
+          <% } %>
+        </div>
+        <% }) %>
+      </nav>
+
+      <!-- Alt Linkler -->
+      <div class="info-links">
+        <h3>HAKKIMIZDA</h3>
+        <ul>
+          <li><a href="/iletisim">İLETİŞİM</a></li>
+          <li><a href="tel:<%= settings.contact_phone || '' %>">TELEFON</a></li>
+          <li><a href="mailto:<%= settings.contact_email || '' %>">MAİL</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Sağ Menü -->
+    <aside class="right-sidebar">
+      <div class="favorites-section">
+        <h3>FAVORİLER</h3>
+        <ul class="social-links">
+          <% if (settings.instagram_url) { %>
+          <li><a href="<%= settings.instagram_url %>" target="_blank" rel="noopener">INSTAGRAM</a></li>
+          <% } %>
+          <% if (settings.linkedin_url) { %>
+          <li><a href="<%= settings.linkedin_url %>" target="_blank" rel="noopener">LINKEDIN</a></li>
+          <% } %>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Ana İçerik (Arka Plan Görseli) -->
+    <main class="main-content">
+      <div class="background-image" style="background-image: url('<%= settings.home_background || "/images/background.jpg" %>');">
+        <!-- Boş - sadece görsel -->
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/home.js"></script>
+</body>
+
+</html>

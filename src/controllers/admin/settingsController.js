@@ -58,7 +58,7 @@ const adminSettingsController = {
                 contact_email,
                 contact_phone,
                 contact_address,
-                about_us,  // ✅ YENİ
+                about_us,
                 social_facebook,
                 social_instagram,
                 social_twitter,
@@ -73,7 +73,7 @@ const adminSettingsController = {
                 contact_email,
                 contact_phone,
                 contact_address,
-                about_us,  // ✅ YENİ
+                about_us,
                 social_facebook,
                 social_instagram,
                 social_twitter,
@@ -136,6 +136,20 @@ const adminSettingsController = {
                     await Settings.upsert({
                         key: 'default_product_image',
                         value: imagePath
+                    });
+                }
+                if (req.files.home_background && req.files.home_background.length > 0) {
+                    const bgPath = `/uploads/settings/${req.files.home_background[0].filename}`;
+                    const oldBg = await Settings.findOne({ where: { key: 'home_background' } });
+                    if (oldBg && oldBg.value) {
+                        const oldBgPath = path.join(__dirname, '../../public', oldBg.value);
+                        if (fs.existsSync(oldBgPath)) {
+                            fs.unlinkSync(oldBgPath);
+                        }
+                    }
+                    await Settings.upsert({
+                        key: 'home_background',
+                        value: bgPath
                     });
                 }
             }

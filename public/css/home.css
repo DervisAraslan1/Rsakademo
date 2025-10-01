@@ -1,0 +1,331 @@
+/* src/public/css/home.css */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+}
+
+.page-container {
+    display: flex;
+    justify-content: space-between;
+    height: 100vh;
+    position: relative;
+}
+
+/* ========== ARKA PLAN ========== */
+.main-content {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.background-image {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* ========== SOL MENÜ ========== */
+.left-sidebar {
+    width: 250px;
+    padding: 40px 30px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.logo h1 {
+    font-size: 18px;
+    color: #fff;
+    margin-bottom: 15px;
+    letter-spacing: 2.5px;
+    font-weight: 600;
+}
+
+.logo img {
+    max-width: 130px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+.categories-nav {
+    margin-bottom: 20px;
+}
+
+.category-group {
+    position: relative;
+}
+
+.category-main {
+    display: block;
+    font-size: 13px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    line-height: 30px;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.category-main:hover {
+    opacity: 0.7;
+}
+
+.category-children {
+    padding-left: 15px;
+    display: none;
+}
+
+.category-group:hover .category-children {
+    display: block;
+}
+
+.category-child {
+    display: block;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 30px;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.category-child:hover {
+    opacity: 0.7;
+}
+
+.info-links h3 {
+    font-size: 13px;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 30px;
+}
+
+.info-links ul {
+    list-style: none;
+}
+
+.info-links li {
+    line-height: 30px;
+}
+
+.info-links a {
+    font-size: 13px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.info-links a:hover {
+    opacity: 0.7;
+}
+
+/* ========== SAĞ MENÜ ========== */
+.right-sidebar {
+    width: 250px;
+    padding: 40px 30px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 10;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.favorites-section {
+    margin-top: 93px;
+}
+
+.favorites-section h3 {
+    font-size: 13px;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 30px;
+}
+
+.social-links {
+    list-style: none;
+    margin-top: 70px;
+}
+
+.social-links li {
+    line-height: 30px;
+}
+
+.social-links a {
+    font-size: 13px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.social-links a:hover {
+    opacity: 0.7;
+}
+
+.left-sidebar::-webkit-scrollbar,
+.right-sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.left-sidebar,
+.right-sidebar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.category-toggle {
+    display: none;
+}
+
+.category-header {
+    display: block;
+}
+
+/* ========== MOBİL ========== */
+@media (max-width: 768px) {
+    body {
+        overflow: auto;
+    }
+
+    .page-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .main-content {
+        position: fixed;
+    }
+
+    .left-sidebar,
+    .right-sidebar {
+        width: 100%;
+        padding: 20px;
+        position: relative;
+    }
+
+    .right-sidebar {
+        text-align: left;
+    }
+
+    .logo h1,
+    .logo img {
+        margin-bottom: 30px;
+    }
+
+    .categories-nav {
+        margin-bottom: 30px;
+    }
+
+    .favorites-section {
+        margin-top: 0;
+    }
+
+    .social-links {
+        margin-top: 30px;
+    }
+
+    /* Kategori header (link + button) */
+    .category-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .category-main {
+        flex: 1;
+        line-height: 32px;
+    }
+
+    /* Toggle button - sadece alt kategorisi olanlarda */
+    .category-group:has(.category-children) .category-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .category-toggle:before {
+        content: '▼';
+        font-size: 10px;
+        color: #fff;
+        transition: transform 0.3s;
+    }
+
+    .category-group.active .category-toggle:before {
+        transform: rotate(180deg);
+    }
+
+    /* Alt kategoriler */
+    .category-children {
+        padding-left: 15px;
+        padding-top: 5px;
+        display: none;
+    }
+
+    .category-group.active .category-children {
+        display: block;
+    }
+
+    /* Desktop hover'ı kapat */
+    .category-group:hover .category-children {
+        display: none;
+    }
+
+    .category-child {
+        line-height: 28px;
+    }
+
+    .info-links li,
+    .info-links h3,
+    .favorites-section h3,
+    .social-links li {
+        line-height: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .left-sidebar,
+    .right-sidebar {
+        padding: 15px;
+    }
+
+    .logo h1 {
+        font-size: 16px;
+        margin-bottom: 25px;
+    }
+
+    .logo img {
+        max-width: 110px;
+        margin-bottom: 25px;
+    }
+}

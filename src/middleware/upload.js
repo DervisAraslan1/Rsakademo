@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
         let uploadPath = 'public/uploads/';
 
         // Field name'e göre klasör belirle
-        if (file.fieldname.includes('site_') || file.fieldname.includes('default_')) {
+        if (file.fieldname.includes('site_') || file.fieldname.includes('default_') || file.fieldname.includes('home_')) {
             uploadPath += 'settings/';
         } else if (file.fieldname === 'images' || file.fieldname.includes('product')) {
             uploadPath += 'products/';

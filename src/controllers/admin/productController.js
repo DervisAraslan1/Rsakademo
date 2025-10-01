@@ -195,7 +195,8 @@ const adminProductController = {
                 width,
                 height,
                 depth,
-                admin: req.session.admin
+                admin: req.session.admin,
+                //active: active === 'on' ? 1 : 0
             });
 
         } catch (error) {
@@ -207,7 +208,7 @@ const adminProductController = {
     // store metodu - dimensions alanını güncelle
     store: async (req, res) => {
         try {
-            const { name, description, width, height, depth, categories } = req.body;
+            const { name, description, width, height, depth, categories, active } = req.body;
 
             // Slug oluştur
             let slug = name.toLowerCase()
@@ -263,7 +264,8 @@ const adminProductController = {
                 slug,
                 description,
                 dimensions: dimensions || null,
-                images
+                images,
+                active: active === 'on' ? 1 : 0
             });
 
             // Kategorileri bağla
@@ -289,7 +291,7 @@ const adminProductController = {
     update: async (req, res) => {
         try {
             const productId = req.params.id;
-            const { name, description, width, height, depth, categories, removed_images, images_order } = req.body;
+            const { name, description, width, height, depth, categories, removed_images, images_order, active } = req.body;
 
             const product = await Product.findByPk(productId);
             if (!product) {
@@ -383,7 +385,8 @@ const adminProductController = {
                 slug,
                 description,
                 dimensions: dimensions || null,
-                images
+                images,
+                active: active === 'on' ? 1 : 0
             });
 
             // Kategorileri güncelle

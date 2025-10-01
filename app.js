@@ -27,7 +27,17 @@ app.set('trust proxy', true);
 
 
 app.use(expressLayouts);
-app.set("layout", "admin/layout"); // default layout
+app.set("layout", false);
+
+// Layout middleware
+app.use((req, res, next) => {
+    if (req.path.startsWith('/admin')) {
+        res.locals.layout = 'admin/layout';
+    } else {
+        res.locals.layout = false;
+    }
+    next();
+});
 
 // View Engine
 app.set('view engine', 'ejs');

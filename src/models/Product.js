@@ -46,6 +46,11 @@ const Product = sequelize.define('Product', {
         type: DataTypes.TINYINT,
         defaultValue: 0
     },
+    active: {  // ✅ YENİ ALAN
+        type: DataTypes.TINYINT,
+        defaultValue: 1,
+        allowNull: false
+    },
     visible: {
         type: DataTypes.TINYINT,
         defaultValue: 1

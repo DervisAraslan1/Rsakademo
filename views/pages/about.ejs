@@ -1,0 +1,31 @@
+<!-- src/views/pages/about.ejs -->
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hakkımızda - <%= title %></title>
+  <link rel="stylesheet" href="/public/css/page.css">
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <!-- Geri Butonu -->
+    <a href="/" class="back-button">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      Ana Sayfa
+    </a>
+
+    <div class="page-content">
+      <h1>HAKKIMIZDA</h1>
+      <div class="content-text">
+        <%- content %>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

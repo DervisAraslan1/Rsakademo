@@ -6,68 +6,57 @@ const indexController = {
     // Ana sayfa
     home: async (req, res) => {
         try {
-            // Slider'ları getir
-            const sliders = await Slider.findAll({
-                where: { visible: 1 },
-                order: [['order', 'ASC'], ['createdAt', 'DESC']],
-                limit: 5
-            });
-
-            // Öne çıkan ürünler
-            const featuredCount = await Settings.getSetting('featured_products_count', 8);
-            const featuredProducts = await Product.findAll({
+            // Ana kategoriler ve alt kategorileri getir
+            const categories = await Category.findAll({
                 where: {
                     visible: 1,
-                    featured: 1
+                    parent_id: null
                 },
                 include: [{
                     model: Category,
-                    as: 'categories',
+                    as: 'children',
                     where: { visible: 1 },
                     required: false
                 }],
-                limit: parseInt(featuredCount),
-                order: [['createdAt', 'DESC']]
+                order: [['name', 'ASC']]
             });
 
-            // Kategoriler
-            const categories = await Category.findAll({
-                where: { visible: 1 },
-                limit: 8,
-                order: [['createdAt', 'DESC']]
+            // Settings
+            const settingsArray = await Settings.findAll();
+            const settings = {};
+            settingsArray.forEach(setting => {
+                settings[setting.key] = setting.value;
             });
 
             res.render('pages/home', {
-                title: 'Ana Sayfa',
-                sliders,
-                featuredProducts,
-                categories
+                title: settings.site_title || 'RSAKA',
+                categories,
+                settings
             });
 
         } catch (error) {
             console.error('Home page error:', error);
-            res.status(500).render('pages/error', {
-                title: 'Hata',
-                message: 'Ana sayfa yüklenirken hata oluştu'
-            });
+            res.status(500).send('Sayfa yüklenirken hata oluştu');
         }
     },
 
     // Hakkımızda sayfası
+    // indexController.js - about metodu
     about: async (req, res) => {
         try {
-            const aboutContent = await Settings.getSetting('about_content', 'Hakkımızda içeriği burada olacak.');
+            const settingsArray = await Settings.findAll();
+            const settings = {};
+            settingsArray.forEach(setting => {
+                settings[setting.key] = setting.value;
+            });
 
             res.render('pages/about', {
-                title: 'Hakkımızda',
-                content: aboutContent
+                title: settings.site_name || 'RSAKA',
+                content: settings.about_us || 'Hakkımızda içeriği henüz eklenmemiş.'
             });
         } catch (error) {
             console.error('About page error:', error);
-            res.status(500).render('pages/error', {
-                title: 'Hata',
-                message: 'Sayfa yüklenirken hata oluştu'
-            });
+            res.status(500).send('Sayfa yüklenirken hata oluştu');
         }
     },
 

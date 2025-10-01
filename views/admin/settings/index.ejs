@@ -1,286 +1,284 @@
 <div class="content-header">
-    <h2 class="content-title">
-        <i class="fas fa-cogs"></i>
-        Site Ayarları
-    </h2>
+  <h2 class="content-title">
+    <i class="fas fa-cogs"></i>
+    Site Ayarları
+  </h2>
 </div>
 
 <form action="/admin/settings" method="POST" enctype="multipart/form-data">
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Genel Ayarlar -->
-            <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
-                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
-                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
-                        <i class="fas fa-globe"></i> Genel Ayarlar
-                    </h5>
+  <div class="row">
+    <div class="col-lg-8">
+      <!-- Genel Ayarlar -->
+      <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+        <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+          <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+            <i class="fas fa-globe"></i> Genel Ayarlar
+          </h5>
 
-                    <div class="mb-3">
-                        <label for="site_name" class="form-label" style="font-weight: 600; color: var(--walnut);">
-                            Site Adı
-                        </label>
-                        <input type="text" class="form-control" id="site_name" name="site_name"
-                            value="<%= settings.site_name || '' %>"
-                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
-                    </div>
+          <div class="mb-3">
+            <label for="site_name" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              Site Adı
+            </label>
+            <input type="text" class="form-control" id="site_name" name="site_name" value="<%= settings.site_name || '' %>" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+          </div>
 
-                    <div class="mb-3">
-                        <label for="site_description" class="form-label"
-                            style="font-weight: 600; color: var(--walnut);">
-                            Site Açıklaması
-                        </label>
-                        <textarea class="form-control" id="site_description" name="site_description" rows="3"
-                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"><%= settings.site_description || '' %></textarea>
-                        <small class="text-muted">SEO için önemlidir</small>
-                    </div>
+          <div class="mb-3">
+            <label for="site_description" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              Site Açıklaması
+            </label>
+            <textarea class="form-control" id="site_description" name="site_description" rows="3" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"><%= settings.site_description || '' %></textarea>
+            <small class="text-muted">SEO için önemlidir</small>
+          </div>
 
-                    <div class="mb-3">
-                        <label for="site_keywords" class="form-label" style="font-weight: 600; color: var(--walnut);">
-                            Anahtar Kelimeler
-                        </label>
-                        <input type="text" class="form-control" id="site_keywords" name="site_keywords"
-                            value="<%= settings.site_keywords || '' %>"
-                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"
-                            placeholder="mobilya, koltuk, masa, sandalye">
-                        <small class="text-muted">Virgülle ayırarak yazın</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Logo ve Favicon -->
-            <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
-                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
-                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
-                        <i class="fas fa-image"></i> Logo ve Favicon
-                    </h5>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="site_logo" class="form-label" style="font-weight: 600; color: var(--walnut);">
-                                Site Logosu
-                            </label>
-                            <% if (settings.site_logo) { %>
-                                <div class="mb-2">
-                                    <img src="<%= settings.site_logo %>" alt="Logo"
-                                        style="max-height: 80px; border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; padding: 10px; background: white;">
-                                </div>
-                                <% } %>
-                                    <input type="file" class="form-control" id="site_logo" name="site_logo"
-                                        accept="image/*"
-                                        style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
-                                    <small class="text-muted">PNG veya SVG önerilir</small>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="site_favicon" class="form-label"
-                                style="font-weight: 600; color: var(--walnut);">
-                                Favicon
-                            </label>
-                            <% if (settings.site_favicon) { %>
-                                <div class="mb-2">
-                                    <img src="<%= settings.site_favicon %>" alt="Favicon"
-                                        style="max-height: 32px; border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 4px; padding: 5px; background: white;">
-                                </div>
-                                <% } %>
-                                    <input type="file" class="form-control" id="site_favicon" name="site_favicon"
-                                        accept="image/*"
-                                        style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
-                                    <small class="text-muted">32x32 veya 64x64 piksel</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- İletişim Bilgileri -->
-            <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
-                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
-                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
-                        <i class="fas fa-phone"></i> İletişim Bilgileri
-                    </h5>
-
-                    <div class="mb-3">
-                        <label for="contact_email" class="form-label" style="font-weight: 600; color: var(--walnut);">
-                            E-posta
-                        </label>
-                        <input type="email" class="form-control" id="contact_email" name="contact_email"
-                            value="<%= settings.contact_email || '' %>"
-                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="contact_phone" class="form-label" style="font-weight: 600; color: var(--walnut);">
-                            Telefon
-                        </label>
-                        <input type="tel" class="form-control" id="contact_phone" name="contact_phone"
-                            value="<%= settings.contact_phone || '' %>"
-                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="contact_address" class="form-label" style="font-weight: 600; color: var(--walnut);">
-                            Adres
-                        </label>
-                        <textarea class="form-control" id="contact_address" name="contact_address" rows="3"
-                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"><%= settings.contact_address || '' %></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Varsayılan Ürün Görseli -->
-            <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
-                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
-                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
-                        <i class="fas fa-image"></i> Varsayılan Ürün Görseli
-                    </h5>
-
-                    <div class="mb-3">
-                        <label for="default_product_image" class="form-label"
-                            style="font-weight: 600; color: var(--walnut);">
-                            Varsayılan Görsel
-                        </label>
-
-                        <% if (settings.default_product_image) { %>
-                            <div class="mb-3">
-                                <img src="<%= settings.default_product_image %>" alt="Default Product"
-                                    style="max-width: 300px; max-height: 200px; border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; padding: 10px; background: white; object-fit: cover;">
-                            </div>
-                            <% } %>
-
-                                <input type="file" class="form-control" id="default_product_image"
-                                    name="default_product_image" accept="image/*"
-                                    style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
-                                <small class="text-muted">Görseli olmayan ürünlerde bu görsel gösterilecektir</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hakkımızda -->
-            <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
-                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
-                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
-                        <i class="fas fa-info-circle"></i> Hakkımızda
-                    </h5>
-
-                    <div class="mb-3">
-                        <label for="about_us" class="form-label" style="font-weight: 600; color: var(--walnut);">
-                            Hakkımızda Metni
-                        </label>
-                        <div id="about_us_editor"
-                            style="height: 300px; border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; background: white;">
-                            <%= settings.about_us || '' %>
-                        </div>
-                        <input type="hidden" name="about_us" id="about_us">
-                        <small class="text-muted">Firmanız hakkında detaylı bilgi ekleyin</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sosyal Medya -->
-            <div class="card" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
-                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
-                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
-                        <i class="fas fa-share-alt"></i> Sosyal Medya
-                    </h5>
-
-                    <div class="mb-3">
-                        <label for="social_facebook" class="form-label" style="font-weight: 600; color: var(--walnut);">
-                            <i class="fab fa-facebook"></i> Facebook
-                        </label>
-                        <input type="url" class="form-control" id="social_facebook" name="social_facebook"
-                            value="<%= settings.social_facebook || '' %>"
-                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"
-                            placeholder="https://facebook.com/...">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="social_instagram" class="form-label"
-                            style="font-weight: 600; color: var(--walnut);">
-                            <i class="fab fa-instagram"></i> Instagram
-                        </label>
-                        <input type="url" class="form-control" id="social_instagram" name="social_instagram"
-                            value="<%= settings.social_instagram || '' %>"
-                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"
-                            placeholder="https://instagram.com/...">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="social_twitter" class="form-label" style="font-weight: 600; color: var(--walnut);">
-                            <i class="fab fa-twitter"></i> Twitter
-                        </label>
-                        <input type="url" class="form-control" id="social_twitter" name="social_twitter"
-                            value="<%= settings.social_twitter || '' %>"
-                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"
-                            placeholder="https://twitter.com/...">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="social_linkedin" class="form-label" style="font-weight: 600; color: var(--walnut);">
-                            <i class="fab fa-linkedin"></i> LinkedIn
-                        </label>
-                        <input type="url" class="form-control" id="social_linkedin" name="social_linkedin"
-                            value="<%= settings.social_linkedin || '' %>"
-                            style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"
-                            placeholder="https://linkedin.com/company/...">
-                    </div>
-                </div>
-            </div>
+          <div class="mb-3">
+            <label for="site_keywords" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              Anahtar Kelimeler
+            </label>
+            <input type="text" class="form-control" id="site_keywords" name="site_keywords" value="<%= settings.site_keywords || '' %>" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;" placeholder="mobilya, koltuk, masa, sandalye">
+            <small class="text-muted">Virgülle ayırarak yazın</small>
+          </div>
         </div>
+      </div>
 
-        <div class="col-lg-4">
-            <div class="sticky-top" style="top: 20px;">
-                <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
-                    <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
-                        <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
-                            <i class="fas fa-info-circle"></i> Bilgi
-                        </h5>
-                        <p style="color: var(--walnut); line-height: 1.8;">
-                            Bu ayarlar sitenizin genel yapılandırmasını kontrol eder. Değişiklikler anında yansır.
-                        </p>
-                        <hr style="border-color: rgba(139, 69, 19, 0.2);">
-                        <ul style="color: var(--walnut); line-height: 1.8; padding-left: 20px;">
-                            <li>Site adı başlıkta görünür</li>
-                            <li>SEO ayarları arama motorları için önemlidir</li>
-                            <li>Logo ve favicon marka kimliğinizi temsil eder</li>
-                            <li>İletişim bilgileri footer'da gösterilir</li>
-                            <li>Hakkımızda sayfasında detaylı bilgi gösterilir</li>
-                        </ul>
-                    </div>
-                </div>
+      <!-- Logo ve Favicon -->
+      <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+        <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+          <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+            <i class="fas fa-image"></i> Logo ve Favicon
+          </h5>
 
-                <div class="d-grid">
-                    <button type="submit" class="btn-furniture btn-primary-furniture"
-                        style="width: 100%; justify-content: center;">
-                        <i class="fas fa-save"></i>
-                        Ayarları Kaydet
-                    </button>
-                </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="site_logo" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                Site Logosu
+              </label>
+              <% if (settings.site_logo) { %>
+              <div class="mb-2">
+                <img src="<%= settings.site_logo %>" alt="Logo" style="max-height: 80px; border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; padding: 10px; background: white;">
+              </div>
+              <% } %>
+              <input type="file" class="form-control" id="site_logo" name="site_logo" accept="image/*" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+              <small class="text-muted">PNG veya SVG önerilir</small>
             </div>
+
+            <div class="col-md-6 mb-3">
+              <label for="site_favicon" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                Favicon
+              </label>
+              <% if (settings.site_favicon) { %>
+              <div class="mb-2">
+                <img src="<%= settings.site_favicon %>" alt="Favicon" style="max-height: 32px; border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 4px; padding: 5px; background: white;">
+              </div>
+              <% } %>
+              <input type="file" class="form-control" id="site_favicon" name="site_favicon" accept="image/*" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+              <small class="text-muted">32x32 veya 64x64 piksel</small>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- İletişim Bilgileri -->
+      <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+        <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+          <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+            <i class="fas fa-phone"></i> İletişim Bilgileri
+          </h5>
+
+          <div class="mb-3">
+            <label for="contact_email" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              E-posta
+            </label>
+            <input type="email" class="form-control" id="contact_email" name="contact_email" value="<%= settings.contact_email || '' %>" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+          </div>
+
+          <div class="mb-3">
+            <label for="contact_phone" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              Telefon
+            </label>
+            <input type="tel" class="form-control" id="contact_phone" name="contact_phone" value="<%= settings.contact_phone || '' %>" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+          </div>
+
+          <div class="mb-3">
+            <label for="contact_address" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              Adres
+            </label>
+            <textarea class="form-control" id="contact_address" name="contact_address" rows="3" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;"><%= settings.contact_address || '' %></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Varsayılan Ürün Görseli -->
+      <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+        <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+          <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+            <i class="fas fa-image"></i> Varsayılan Ürün Görseli
+          </h5>
+
+          <div class="mb-3">
+            <label for="default_product_image" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              Varsayılan Görsel
+            </label>
+
+            <% if (settings.default_product_image) { %>
+            <div class="mb-3">
+              <img src="<%= settings.default_product_image %>" alt="Default Product" style="max-width: 300px; max-height: 200px; border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; padding: 10px; background: white; object-fit: cover;">
+            </div>
+            <% } %>
+
+            <input type="file" class="form-control" id="default_product_image" name="default_product_image" accept="image/*" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+            <small class="text-muted">Görseli olmayan ürünlerde bu görsel gösterilecektir</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ana Sayfa Arka Plan Görseli -->
+      <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+        <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+          <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+            <i class="fas fa-image"></i> Ana Sayfa Arka Plan Görseli
+          </h5>
+
+          <div class="mb-3">
+            <label for="home_background" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              Arka Plan Görseli
+            </label>
+
+            <% if (settings.home_background) { %>
+            <div class="mb-3">
+              <img src="<%= settings.home_background %>" alt="Background" style="max-width: 100%; max-height: 300px; border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; object-fit: cover;">
+            </div>
+            <% } %>
+
+            <input type="file" class="form-control" id="home_background" name="home_background" accept="image/*" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;">
+            <small class="text-muted">Ana sayfada görünecek tam ekran arka plan görseli. Yüksek çözünürlük önerilir (1920x1080 veya daha büyük)</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hakkımızda -->
+      <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+        <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+          <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+            <i class="fas fa-info-circle"></i> Hakkımızda
+          </h5>
+
+          <div class="mb-3">
+            <label for="about_us" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              Hakkımızda Metni
+            </label>
+            <div id="about_us_editor" style="height: 300px; border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; background: white;">
+              <%= settings.about_us || '' %>
+            </div>
+            <input type="hidden" name="about_us" id="about_us">
+            <small class="text-muted">Firmanız hakkında detaylı bilgi ekleyin</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sosyal Medya -->
+      <div class="card" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+        <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+          <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+            <i class="fas fa-share-alt"></i> Sosyal Medya
+          </h5>
+
+          <div class="mb-3">
+            <label for="social_facebook" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              <i class="fab fa-facebook"></i> Facebook
+            </label>
+            <input type="url" class="form-control" id="social_facebook" name="social_facebook" value="<%= settings.social_facebook || '' %>" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;" placeholder="https://facebook.com/...">
+          </div>
+
+          <div class="mb-3">
+            <label for="social_instagram" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              <i class="fab fa-instagram"></i> Instagram
+            </label>
+            <input type="url" class="form-control" id="social_instagram" name="social_instagram" value="<%= settings.social_instagram || '' %>" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;" placeholder="https://instagram.com/...">
+          </div>
+
+          <div class="mb-3">
+            <label for="social_twitter" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              <i class="fab fa-twitter"></i> Twitter
+            </label>
+            <input type="url" class="form-control" id="social_twitter" name="social_twitter" value="<%= settings.social_twitter || '' %>" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;" placeholder="https://twitter.com/...">
+          </div>
+
+          <div class="mb-3">
+            <label for="social_linkedin" class="form-label" style="font-weight: 600; color: var(--walnut);">
+              <i class="fab fa-linkedin"></i> LinkedIn
+            </label>
+            <input type="url" class="form-control" id="social_linkedin" name="social_linkedin" value="<%= settings.social_linkedin || '' %>" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px;" placeholder="https://linkedin.com/company/...">
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div class="col-lg-4">
+      <div class="sticky-top" style="top: 20px;">
+        <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+          <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+            <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+              <i class="fas fa-info-circle"></i> Bilgi
+            </h5>
+            <p style="color: var(--walnut); line-height: 1.8;">
+              Bu ayarlar sitenizin genel yapılandırmasını kontrol eder. Değişiklikler anında yansır.
+            </p>
+            <hr style="border-color: rgba(139, 69, 19, 0.2);">
+            <ul style="color: var(--walnut); line-height: 1.8; padding-left: 20px;">
+              <li>Site adı başlıkta görünür</li>
+              <li>SEO ayarları arama motorları için önemlidir</li>
+              <li>Logo ve favicon marka kimliğinizi temsil eder</li>
+              <li>İletişim bilgileri footer'da gösterilir</li>
+              <li>Hakkımızda sayfasında detaylı bilgi gösterilir</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn-furniture btn-primary-furniture" style="width: 100%; justify-content: center;">
+            <i class="fas fa-save"></i>
+            Ayarları Kaydet
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </form>
 
 <script>
-    // Quill Text Editor
-    if (document.getElementById('about_us_editor')) {
-        var quill = new Quill('#about_us_editor', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                    [{ 'color': [] }, { 'background': [] }],
-                    [{ 'align': [] }],
-                    ['link'],
-                    ['clean']
-                ]
-            },
-            placeholder: 'Firmanız hakkında bilgi yazın...'
-        });
+  // Quill Text Editor
+  if (document.getElementById('about_us_editor')) {
+    var quill = new Quill('#about_us_editor', {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          [{
+            'header': [1, 2, 3, false]
+          }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{
+            'list': 'ordered'
+          }, {
+            'list': 'bullet'
+          }],
+          [{
+            'color': []
+          }, {
+            'background': []
+          }],
+          [{
+            'align': []
+          }],
+          ['link'],
+          ['clean']
+        ]
+      },
+      placeholder: 'Firmanız hakkında bilgi yazın...'
+    });
 
-        // Form submit'te hidden input'a içeriği aktar
-        document.querySelector('form').addEventListener('submit', function () {
-            document.getElementById('about_us').value = quill.root.innerHTML;
-        });
-    }
+    // Form submit'te hidden input'a içeriği aktar
+    document.querySelector('form').addEventListener('submit', function() {
+      document.getElementById('about_us').value = quill.root.innerHTML;
+    });
+  }
 </script>

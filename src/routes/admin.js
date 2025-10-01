@@ -10,7 +10,7 @@ const adminLogsController = require('../controllers/admin/logsController');
 const { adminAuth } = require('../middleware/adminAuth');
 const { uploadMiddleware } = require('../middleware/upload');
 const loadAdminSettings = require('../middleware/adminSettings');
-const passAdminToLayout = require('../middleware/passAdminToLayout'); // ✅ YENİ
+const passAdminToLayout = require('../middleware/passAdminToLayout');
 
 // Tüm admin route'larına settings middleware'ini ekle
 router.use(loadAdminSettings);
@@ -38,7 +38,6 @@ router.post('/products/:id/delete', adminProductController.destroy);
 router.get('/products/:id', adminProductController.show); // Detay sayfası en sona
 
 // Categories Management
-// Categories Management
 router.get('/categories', adminCategoryController.index);
 router.get('/categories/create', adminCategoryController.create);
 router.post('/categories', adminCategoryController.store);
@@ -62,7 +61,8 @@ router.get('/settings', adminSettingsController.index);
 router.post('/settings', uploadMiddleware.fields([
     { name: 'site_logo', maxCount: 1 },
     { name: 'site_favicon', maxCount: 1 },
-    { name: 'default_product_image', maxCount: 1 }
+    { name: 'default_product_image', maxCount: 1 },
+    { name: 'home_background', maxCount: 1 }
 ]), adminSettingsController.update);
 
 // Logs Management

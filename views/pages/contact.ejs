@@ -1,0 +1,76 @@
+<!-- src/views/pages/contact.ejs -->
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>İletişim - <%= title %></title>
+  <link rel="stylesheet" href="/public/css/page.css">
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <!-- Geri Butonu -->
+    <a href="/" class="back-button">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      Ana Sayfa
+    </a>
+
+    <div class="page-content">
+      <h1>İLETİŞİM</h1>
+
+      <div class="contact-info">
+        <% if (contactInfo.phone) { %>
+        <div class="contact-item">
+          <h3>TELEFON</h3>
+          <a href="tel:<%= contactInfo.phone.replace(/\s/g, '') %>">
+            <%= contactInfo.phone %>
+          </a>
+        </div>
+        <% } %>
+
+        <% if (contactInfo.email) { %>
+        <div class="contact-item">
+          <h3>E-POSTA</h3>
+          <a href="mailto:<%= contactInfo.email %>">
+            <%= contactInfo.email %>
+          </a>
+        </div>
+        <% } %>
+
+        <% if (contactInfo.address) { %>
+        <div class="contact-item">
+          <h3>ADRES</h3>
+          <p><%= contactInfo.address %></p>
+        </div>
+        <% } %>
+      </div>
+
+      <!-- İletişim Formu -->
+      <form id="contactForm" class="contact-form">
+        <div class="form-group">
+          <input type="text" name="name" placeholder="Adınız Soyadınız" required>
+        </div>
+        <div class="form-group">
+          <input type="email" name="email" placeholder="E-posta Adresiniz" required>
+        </div>
+        <div class="form-group">
+          <input type="tel" name="phone" placeholder="Telefon Numaranız">
+        </div>
+        <div class="form-group">
+          <textarea name="message" rows="5" placeholder="Mesajınız" required></textarea>
+        </div>
+        <button type="submit" class="submit-btn">GÖNDER</button>
+      </form>
+
+      <div id="formMessage" class="form-message"></div>
+    </div>
+  </div>
+
+  <script src="/public/js/contact.js"></script>
+</body>
+
+</html>
