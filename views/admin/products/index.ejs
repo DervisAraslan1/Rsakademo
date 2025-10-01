@@ -84,49 +84,14 @@
             </tbody>
         </table>
     </div>
-
-    <!-- Pagination -->
-    <% if (pagination && pagination.totalPages> 1) { %>
-        <div class="d-flex justify-content-center mt-4">
-            <nav>
-                <ul class="pagination">
-                    <% if (pagination.hasPrev) { %>
-                        <li class="page-item">
-                            <a class="page-link"
-                                href="?page=<%= pagination.currentPage - 1 %><%= search ? '&search=' + search : '' %>">
-                                Önceki
-                            </a>
-                        </li>
-                        <% } %>
-
-                            <% for (let i=1; i <=pagination.totalPages; i++) { %>
-                                <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
-                                    <a class="page-link" href="?page=<%= i %><%= search ? '&search=' + search : '' %>">
-                                        <%= i %>
-                                    </a>
-                                </li>
-                                <% } %>
-
-                                    <% if (pagination.hasNext) { %>
-                                        <li class="page-item">
-                                            <a class="page-link"
-                                                href="?page=<%= pagination.currentPage + 1 %><%= search ? '&search=' + search : '' %>">
-                                                Sonraki
-                                            </a>
-                                        </li>
-                                        <% } %>
-                </ul>
-            </nav>
+    <% } else { %>
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-5x mb-3" style="color: var(--walnut); opacity: 0.3;"></i>
+            <h4 style="color: var(--walnut);">Henüz ürün yok</h4>
+            <p class="text-muted">Yeni ürün eklemek için yukarıdaki butona tıklayın</p>
+            <a href="/admin/products/create" class="btn-furniture btn-primary-furniture mt-3">
+                <i class="fas fa-plus"></i>
+                İlk Ürünü Ekle
+            </a>
         </div>
         <% } %>
-            <% } else { %>
-                <div class="text-center py-5">
-                    <i class="fas fa-inbox fa-5x mb-3" style="color: var(--walnut); opacity: 0.3;"></i>
-                    <h4 style="color: var(--walnut);">Henüz ürün yok</h4>
-                    <p class="text-muted">Yeni ürün eklemek için yukarıdaki butona tıklayın</p>
-                    <a href="/admin/products/create" class="btn-furniture btn-primary-furniture mt-3">
-                        <i class="fas fa-plus"></i>
-                        İlk Ürünü Ekle
-                    </a>
-                </div>
-                <% } %>

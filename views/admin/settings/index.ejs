@@ -154,6 +154,27 @@
                 </div>
             </div>
 
+            <!-- Hakkımızda -->
+            <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+                        <i class="fas fa-info-circle"></i> Hakkımızda
+                    </h5>
+
+                    <div class="mb-3">
+                        <label for="about_us" class="form-label" style="font-weight: 600; color: var(--walnut);">
+                            Hakkımızda Metni
+                        </label>
+                        <div id="about_us_editor"
+                            style="height: 300px; border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; background: white;">
+                            <%= settings.about_us || '' %>
+                        </div>
+                        <input type="hidden" name="about_us" id="about_us">
+                        <small class="text-muted">Firmanız hakkında detaylı bilgi ekleyin</small>
+                    </div>
+                </div>
+            </div>
+
             <!-- Sosyal Medya -->
             <div class="card" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
                 <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
@@ -206,32 +227,60 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card sticky-top"
-                style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px; top: 20px;">
-                <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
-                    <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
-                        <i class="fas fa-info-circle"></i> Bilgi
-                    </h5>
-                    <p style="color: var(--walnut); line-height: 1.8;">
-                        Bu ayarlar sitenizin genel yapılandırmasını kontrol eder. Değişiklikler anında yansır.
-                    </p>
-                    <hr style="border-color: rgba(139, 69, 19, 0.2);">
-                    <ul style="color: var(--walnut); line-height: 1.8; padding-left: 20px;">
-                        <li>Site adı başlıkta görünür</li>
-                        <li>SEO ayarları arama motorları için önemlidir</li>
-                        <li>Logo ve favicon marka kimliğinizi temsil eder</li>
-                        <li>İletişim bilgileri footer'da gösterilir</li>
-                    </ul>
+            <div class="sticky-top" style="top: 20px;">
+                <div class="card mb-4" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+                    <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+                        <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+                            <i class="fas fa-info-circle"></i> Bilgi
+                        </h5>
+                        <p style="color: var(--walnut); line-height: 1.8;">
+                            Bu ayarlar sitenizin genel yapılandırmasını kontrol eder. Değişiklikler anında yansır.
+                        </p>
+                        <hr style="border-color: rgba(139, 69, 19, 0.2);">
+                        <ul style="color: var(--walnut); line-height: 1.8; padding-left: 20px;">
+                            <li>Site adı başlıkta görünür</li>
+                            <li>SEO ayarları arama motorları için önemlidir</li>
+                            <li>Logo ve favicon marka kimliğinizi temsil eder</li>
+                            <li>İletişim bilgileri footer'da gösterilir</li>
+                            <li>Hakkımızda sayfasında detaylı bilgi gösterilir</li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mt-4 d-grid">
-                <button type="submit" class="btn-furniture btn-primary-furniture"
-                    style="width: 100%; justify-content: center;">
-                    <i class="fas fa-save"></i>
-                    Ayarları Kaydet
-                </button>
+                <div class="d-grid">
+                    <button type="submit" class="btn-furniture btn-primary-furniture"
+                        style="width: 100%; justify-content: center;">
+                        <i class="fas fa-save"></i>
+                        Ayarları Kaydet
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </form>
+
+<script>
+    // Quill Text Editor
+    if (document.getElementById('about_us_editor')) {
+        var quill = new Quill('#about_us_editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'align': [] }],
+                    ['link'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Firmanız hakkında bilgi yazın...'
+        });
+
+        // Form submit'te hidden input'a içeriği aktar
+        document.querySelector('form').addEventListener('submit', function () {
+            document.getElementById('about_us').value = quill.root.innerHTML;
+        });
+    }
+</script>

@@ -44,7 +44,7 @@ const Logs = sequelize.define('Logs', {
 }, {
     tableName: 'logs',
     timestamps: true,
-    updatedAt: false // Sadece createdAt
+    updatedAt: false
 });
 
 // Helper methods
@@ -55,10 +55,10 @@ Logs.logAction = async function (action, tableName, recordId = null, oldValues =
             table_name: tableName,
             record_id: recordId,
             old_values: oldValues,
-            new_values: newValues
+            new_values: newValues,
+            admin_user: req?.session?.admin?.username || 'admin'
         };
 
-        // Request varsa IP ve User-Agent bilgilerini al
         if (req) {
             logData.ip_address = req.ip || req.connection.remoteAddress;
             logData.user_agent = req.get('User-Agent');
@@ -80,30 +80,55 @@ Logs.ACTIONS = {
     LOGOUT: 'LOGOUT'
 };
 
-// Logs model'ine eklenecek metodlar
+// Detaylı açıklama metodu
+// Detaylı açıklama metodu
 Logs.prototype.getDescription = function () {
-    const actions = {
-        'create': 'eklendi',
-        'update': 'güncellendi',
-        'delete': 'kaldırıldı'
+    const actionTexts = {
+        'CREATE': 'oluşturdu',
+        'UPDATE': 'güncelledi',
+        'DELETE': 'kaldırdı',
+        'RESTORE': 'geri yükledi',
+        'LOGIN': 'giriş yaptı',
+        'LOGOUT': 'çıkış yaptı'
     };
 
-    const tables = {
-        'products': 'Ürün',
-        'categories': 'Kategori',
-        'sliders': 'Slider',
-        'settings': 'Ayar'
+    const tableTexts = {
+        'products': 'ürünü',
+        'categories': 'kategoriyi',
+        'sliders': 'slider\'ı',
+        'settings': 'ayarları'
     };
 
-    const action = actions[this.action] || this.action;
-    const table = tables[this.table] || this.table;
+    const action = actionTexts[this.action] || this.action;
+    const table = tableTexts[this.table_name] || 'kaydı';  // ✅ this.table değil this.table_name
+    const adminName = this.admin_user || 'Admin';
 
-    return `${table} ${action}`;
+    // Kayıt adını al
+    let recordName = '';
+    if (this.new_values) {
+        try {
+            const data = typeof this.new_values === 'string' ? JSON.parse(this.new_values) : this.new_values;
+            if (data.name) {
+                recordName = `"${data.name}"`;
+            }
+        } catch (e) {
+            console.error('Parse error:', e);
+        }
+    }
+
+    if (recordName) {
+        return `${adminName}, ${recordName} ${table} ${action}`;
+    } else {
+        return `${adminName} bir ${this.table_name || 'kayıt'} ${action}`;  // ✅ Fallback
+    }
 };
-
+// Zaman farkı hesaplama
 Logs.prototype.getTimeAgo = function () {
+    if (!this.createdAt) return 'Bilinmeyen zaman';
+
     const now = new Date();
-    const diff = now - this.createdAt;
+    const logDate = new Date(this.createdAt);
+    const diff = now - logDate;
 
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(minutes / 60);

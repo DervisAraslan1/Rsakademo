@@ -34,7 +34,7 @@
         </div>
         <div class="label">Bu Ay Görüntüleme</div>
     </div>
-    <div class="stat-card">
+    <!-- <div class="stat-card">
         <div class="icon">
             <i class="fas fa-star"></i>
         </div>
@@ -42,7 +42,7 @@
             <%= stats.featuredProducts %>
         </div>
         <div class="label">Öne Çıkan Ürünler</div>
-    </div>
+    </div> -->
 </div>
 
 <!-- Content Grid -->
@@ -56,12 +56,17 @@
             <% if (recentLogs && recentLogs.length> 0) { %>
                 <% recentLogs.forEach(log=> { %>
                     <div class="activity-item">
-                        <div class="activity-icon">
-                            <% if (log.action==='create' ) { %>
+                        <div class="activity-icon" style="<%= 
+                log.action === 'CREATE' ? 'background: linear-gradient(45deg, var(--oak-brown), var(--cedar));' : 
+                log.action === 'UPDATE' ? 'background: linear-gradient(45deg, var(--walnut), var(--mahogany));' : 
+                log.action === 'DELETE' ? 'background: linear-gradient(45deg, var(--mahogany), var(--cedar));' : 
+                'background: linear-gradient(45deg, var(--oak-brown), var(--cedar));' 
+            %>">
+                            <% if (log.action==='CREATE' ) { %>
                                 <i class="fas fa-plus"></i>
-                                <% } else if (log.action==='update' ) { %>
+                                <% } else if (log.action==='UPDATE' ) { %>
                                     <i class="fas fa-edit"></i>
-                                    <% } else if (log.action==='delete' ) { %>
+                                    <% } else if (log.action==='DELETE' ) { %>
                                         <i class="fas fa-trash"></i>
                                         <% } else { %>
                                             <i class="fas fa-info"></i>
@@ -72,14 +77,23 @@
                                 <%= log.getDescription() %>
                             </div>
                             <div class="activity-time">
+                                <i class="far fa-clock me-1"></i>
                                 <%= log.getTimeAgo() %>
                             </div>
                         </div>
                     </div>
                     <% }) %>
+
+                        <div class="text-center mt-3">
+                            <a href="/admin/logs" class="btn btn-sm"
+                                style="background: var(--oak-brown); color: white;">
+                                <i class="fas fa-history me-1"></i>
+                                Tüm Logları Görüntüle
+                            </a>
+                        </div>
                         <% } else { %>
                             <div class="text-center text-muted py-4">
-                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <i class="fas fa-inbox fa-3x mb-3" style="opacity: 0.3;"></i>
                                 <p>Henüz aktivite yok</p>
                             </div>
                             <% } %>
@@ -93,37 +107,40 @@
             </h5>
 
             <div style="text-align: center; padding: 20px 0;">
-                <div style="font-size: 2rem; color: var(--oak-brown); margin-bottom: 10px;">
+                <div style="font-size: 2rem; color: #27ae60; margin-bottom: 10px;">
                     <i class="fas fa-plus-circle"></i>
                 </div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: var(--espresso); margin-bottom: 5px;">
+                <div style="font-size: 2rem; font-weight: bold; color: var(--espresso); margin-bottom: 5px;">
                     <%= stats.weeklyNewProducts %>
                 </div>
-                <div style="color: var(--walnut); font-size: 0.9rem;">Yeni Ürün Eklendi</div>
+                <div style="color: var(--walnut); font-size: 0.9rem; font-weight: 600;">Yeni Ürün Eklendi</div>
+                <small style="color: rgba(111, 78, 55, 0.6);">Son 7 gün</small>
+            </div>
+
+            <hr style="border-color: rgba(139, 69, 19, 0.2);">
+
+            <div style="text-align: center; padding: 20px 0;">
+                <div style="font-size: 2rem; color: #3498db; margin-bottom: 10px;">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div style="font-size: 2rem; font-weight: bold; color: var(--espresso); margin-bottom: 5px;">
+                    <%= stats.weeklyUpdates || 0 %>
+                </div>
+                <div style="color: var(--walnut); font-size: 0.9rem; font-weight: 600;">Güncelleme Yapıldı</div>
+                <small style="color: rgba(111, 78, 55, 0.6);">Son 7 gün</small>
             </div>
 
             <hr style="border-color: rgba(139, 69, 19, 0.2);">
 
             <div style="text-align: center; padding: 20px 0;">
                 <div style="font-size: 2rem; color: var(--cedar); margin-bottom: 10px;">
-                    <i class="fas fa-eye"></i>
+                    <i class="fas fa-tags"></i>
                 </div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: var(--espresso); margin-bottom: 5px;">
-                    <%= stats.weeklyPageViews.toLocaleString() %>
+                <div style="font-size: 2rem; font-weight: bold; color: var(--espresso); margin-bottom: 5px;">
+                    <%= stats.totalCategories %>
                 </div>
-                <div style="color: var(--walnut); font-size: 0.9rem;">Sayfa Görüntüleme</div>
-            </div>
-
-            <hr style="border-color: rgba(139, 69, 19, 0.2);">
-
-            <div style="text-align: center; padding: 20px 0;">
-                <div style="font-size: 2rem; color: var(--pine-green); margin-bottom: 10px;">
-                    <i class="fas fa-heart"></i>
-                </div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: var(--espresso); margin-bottom: 5px;">
-                    <%= stats.weeklyFavorites %>
-                </div>
-                <div style="color: var(--walnut); font-size: 0.9rem;">Favorilere Ekleme</div>
+                <div style="color: var(--walnut); font-size: 0.9rem; font-weight: 600;">Aktif Kategori</div>
+                <small style="color: rgba(111, 78, 55, 0.6);">Toplam</small>
             </div>
         </div>
     </div>
@@ -141,11 +158,11 @@
         <div class="title">Kategori Yönet</div>
         <div class="description">Kategorileri düzenleyin</div>
     </a>
-    <a href="/admin/sliders" class="quick-action">
+    <!-- <a href="/admin/sliders" class="quick-action">
         <i class="fas fa-images"></i>
         <div class="title">Slider Güncelle</div>
         <div class="description">Ana sayfa slider'ını düzenleyin</div>
-    </a>
+    </a> -->
     <a href="/admin/settings" class="quick-action">
         <i class="fas fa-cogs"></i>
         <div class="title">Site Ayarları</div>

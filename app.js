@@ -56,27 +56,19 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 // Session Configuration
 app.use(session({
     secret: process.env.SESSION_SECRET || 'mobilya-secret-key-2024',
-    resave: false,
-    saveUninitialized: false,
+    resave: false,  // ✅ false kalabilir
+    saveUninitialized: false,  // ✅ false kalabilir
+    name: 'mobilya.sid',  // ✅ Özel isim verin
     cookie: {
-        secure: false,  // Localhost için false - HTTPS'de true yapabilirsiniz
-        httpOnly: true, // XSS koruması için
-        maxAge: 24 * 60 * 60 * 1000 // 24 saat
-    }
+        secure: false,  // HTTPS kullanıyorsanız true yapın
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,  // 24 saat
+        sameSite: 'lax',
+        path: '/'
+    },
+    rolling: true  // ✅ Her istekte cookie'yi yenile
 }));
 
-// Session Debug Middleware - Test için ekleyin
-app.use((req, res, next) => {
-    if (req.path.startsWith('/admin')) {
-        console.log('Session Debug:', {
-            path: req.path,
-            sessionID: req.sessionID,
-            session: req.session,
-            cookies: req.headers.cookie
-        });
-    }
-    next();
-});
 
 // Logging
 if (process.env.NODE_ENV === 'development') {

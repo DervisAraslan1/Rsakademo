@@ -44,8 +44,9 @@ router.get('/categories/create', adminCategoryController.create);
 router.post('/categories', adminCategoryController.store);
 router.get('/categories/:id/edit', adminCategoryController.edit);
 router.post('/categories/:id/update', adminCategoryController.update);
-router.get('/categories/:id/delete', adminCategoryController.deleteForm); // YENİ
+router.get('/categories/:id/delete', adminCategoryController.deleteForm);
 router.post('/categories/:id/delete', adminCategoryController.destroy);
+router.post('/categories/:id/set-parent', adminCategoryController.setParent);
 
 // Slider Management
 router.get('/sliders', adminSliderController.index);

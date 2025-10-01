@@ -1,4 +1,6 @@
 // src/controllers/admin/productController.js
+const path = require('path');
+const fs = require('fs');
 const { Product, Category, Logs, Settings } = require('../../models');
 const { Op } = require('sequelize');
 
@@ -132,13 +134,15 @@ const adminProductController = {
         }
     },
 
-    // Ürün düzenleme sayfası
     edit: async (req, res) => {
         try {
-            const product = await Product.findByPk(req.params.id, {
+            const productId = req.params.id;
+
+            const product = await Product.findByPk(productId, {
                 include: [{
                     model: Category,
-                    as: 'categories'
+                    as: 'categories',
+                    required: false
                 }]
             });
 
@@ -146,54 +150,44 @@ const adminProductController = {
                 return res.redirect('/admin/products?error=notfound');
             }
 
+            // ✅ Images'i düzgün parse et ve temizle
+            let images = [];
+            try {
+                images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+                if (!Array.isArray(images)) images = [];
+
+                // ✅ Bozuk veriyi temizle - sadece geçerli URL'leri al
+                images = images.filter(img => {
+                    return typeof img === 'string' &&
+                        img.length > 2 &&
+                        (img.startsWith('/uploads/') || img.startsWith('http'));
+                });
+            } catch (e) {
+                console.error('Images parse error:', e);
+                images = [];
+            }
+
+            // Boyutları ayrıştır
+            let width = '', height = '', depth = '';
+            if (product.dimensions) {
+                const dims = product.dimensions.replace(' cm', '').split(' x ');
+                width = dims[0] || '';
+                height = dims[1] || '';
+                depth = dims[2] || '';
+            }
+
             const categories = await Category.findAll({
                 where: { visible: 1 },
                 order: [['name', 'ASC']]
             });
 
-            // Product'ı plain object'e çevir
-            let productData = {
-                id: product.id,
-                name: product.name,
-                slug: product.slug,
-                description: product.description,
-                dimensions: product.dimensions,
-                visible: product.visible,
-                createdAt: product.createdAt,
-                updatedAt: product.updatedAt,
-                categories: product.categories || [],
-                images: [] // Default boş array
-            };
+            const productData = product.toJSON();
+            productData.images = images; // ✅ Temizlenmiş images
 
-            // Images'i parse et
-            if (product.images) {
-                if (typeof product.images === 'string') {
-                    try {
-                        const parsed = JSON.parse(product.images);
-                        productData.images = Array.isArray(parsed) ? parsed : [];
-                    } catch (e) {
-                        console.error('Image parse error:', e);
-                        productData.images = [];
-                    }
-                } else if (Array.isArray(product.images)) {
-                    productData.images = product.images;
-                }
-            }
-
-            // Boyutları ayrıştır
-            let width = '', height = '', depth = '';
-            if (productData.dimensions) {
-                const cleaned = productData.dimensions.replace(/cm/gi, '').trim();
-                const dimensionParts = cleaned.split('x').map(d => d.trim());
-                width = dimensionParts[0] || '';
-                height = dimensionParts[1] || '';
-                depth = dimensionParts[2] || '';
-            }
-
-            console.log('Product images:', productData.images); // Debug için
+            console.log('Cleaned product images:', images); // Debug
 
             res.render('admin/products/edit', {
-                title: `Düzenle: ${product.name}`,
+                title: `Ürün Düzenle - ${product.name}`,
                 layout: 'admin/layout',
                 currentPage: 'products',
                 product: productData,
@@ -206,13 +200,7 @@ const adminProductController = {
 
         } catch (error) {
             console.error('Admin product edit error:', error);
-            res.status(500).render('admin/error', {
-                title: 'Hata',
-                layout: 'admin/layout',
-                currentPage: 'products',
-                message: 'Ürün düzenleme sayfası yüklenirken hata oluştu',
-                admin: req.session.admin
-            });
+            res.redirect('/admin/products?error=notfound');
         }
     },
 
@@ -298,11 +286,10 @@ const adminProductController = {
         }
     },
 
-    // update metodu - dimensions alanını güncelle
     update: async (req, res) => {
         try {
             const productId = req.params.id;
-            const { name, description, width, height, depth, categories } = req.body;
+            const { name, description, width, height, depth, categories, removed_images, images_order } = req.body;
 
             const product = await Product.findByPk(productId);
             if (!product) {
@@ -323,6 +310,7 @@ const adminProductController = {
                 .replace(/-+/g, '-')
                 .replace(/^-|-$/g, '');
 
+            // Slug kontrolü
             const existingProduct = await Product.findOne({
                 where: {
                     slug: slug,
@@ -354,8 +342,36 @@ const adminProductController = {
                 .filter(d => d && d.trim())
                 .join(' x ') + (width || height || depth ? ' cm' : '');
 
+            // Mevcut resimleri al
+            let images = [];
+            try {
+                images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+                if (!Array.isArray(images)) images = [];
+            } catch (e) {
+                images = [];
+            }
+
+            // ✅ Silinen resimleri kaldır
+            if (removed_images) {
+                const removedList = JSON.parse(removed_images);
+                images = images.filter(img => !removedList.includes(img));
+
+                // Dosyaları fiziksel olarak sil
+                removedList.forEach(imgPath => {
+                    const fullPath = path.join(__dirname, '../../public', imgPath);
+                    if (fs.existsSync(fullPath)) {
+                        fs.unlinkSync(fullPath);
+                    }
+                });
+            }
+
+            // ✅ Resim sıralamasını güncelle
+            if (images_order) {
+                const newOrder = JSON.parse(images_order);
+                images = newOrder.filter(img => images.includes(img));
+            }
+
             // Yeni resimler varsa ekle
-            let images = product.images || [];
             if (req.files && req.files.length > 0) {
                 const newImages = req.files.map(file => `/uploads/products/${file.filename}`);
                 images = [...images, ...newImages];

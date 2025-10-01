@@ -5,21 +5,23 @@ const Product = require('./Product');
 const Slider = require('./Slider');
 const Settings = require('./Settings');
 const Logs = require('./Logs');
+const User = require('./User');
 
 // Many-to-Many: Product <-> Category
 Product.belongsToMany(Category, {
-    through: 'ProductCategories',
+    through: 'productcategories', // küçük harf
     foreignKey: 'product_id',
     otherKey: 'category_id',
     as: 'categories'
 });
 
 Category.belongsToMany(Product, {
-    through: 'ProductCategories',
+    through: 'productcategories', // küçük harf
     foreignKey: 'category_id',
     otherKey: 'product_id',
     as: 'products'
 });
+
 
 // Sync function
 const syncDatabase = async () => {
@@ -71,5 +73,6 @@ module.exports = {
     Slider,
     Settings,
     Logs,
+    User,
     syncDatabase
 };

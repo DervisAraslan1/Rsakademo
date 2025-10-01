@@ -1,5 +1,5 @@
 // src/controllers/adminController.js
-const { Product, Category, Slider, Settings, Logs } = require('../models');
+const { Product, Category, Slider, Settings, Logs, User } = require('../models');
 const { Op } = require('sequelize');
 const bcrypt = require('bcrypt');
 
@@ -20,24 +20,61 @@ const adminController = {
         try {
             const { username, password } = req.body;
 
-            const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-            const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+            const user = await User.findOne({
+                where: {
+                    username: username,
+                    role: {
+                        [Op.in]: ['super_admin', 'admin', 'editor']
+                    },
+                    is_active: true
+                }
+            });
 
-            if (username === adminUsername && password === adminPassword) {
-                req.session.admin = {
-                    username: adminUsername,
-                    loginTime: new Date()
-                };
-
-                await Logs.logAction(Logs.ACTIONS.LOGIN, 'admin', null, null, { username }, req);
-
-                return res.redirect('/admin/dashboard');
+            if (!user) {
+                return res.redirect('/admin/login?error=invalid');
             }
 
-            res.redirect('/admin/login?error=invalid');
+            const isValidPassword = await bcrypt.compare(password, user.password);
+            if (!isValidPassword) {
+                return res.redirect('/admin/login?error=invalid');
+            }
+
+            // Session'a kaydet
+            req.session.admin = {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                full_name: user.full_name,
+                loginTime: new Date()
+            };
+
+            req.session.save(async (err) => {
+                if (err) {
+                    return res.redirect('/admin/login?error=session');
+                }
+
+                try {
+                    await user.update({ last_login: new Date() });
+
+                    await Logs.logAction(
+                        Logs.ACTIONS.LOGIN,
+                        'users',
+                        user.id,
+                        null,
+                        { username: user.username, role: user.role },
+                        req
+                    );
+
+                    return res.redirect('/admin/dashboard');
+                } catch {
+                    // Log hatası olsa bile dashboard'a yönlendir
+                    return res.redirect('/admin/dashboard');
+                }
+            });
 
         } catch (error) {
-            console.error('Admin login error:', error);
+            console.error('❌ Admin login error:', error);
             res.redirect('/admin/login?error=server');
         }
     },
@@ -46,11 +83,27 @@ const adminController = {
     logout: async (req, res) => {
         try {
             if (req.session.admin) {
-                await Logs.logAction(Logs.ACTIONS.LOGOUT, 'admin', null, null,
-                    { username: req.session.admin.username }, req);
-                req.session.destroy();
+                const adminData = { ...req.session.admin };
+
+                await Logs.logAction(
+                    Logs.ACTIONS.LOGOUT,
+                    'users',
+                    adminData.id,
+                    null,
+                    { username: adminData.username },
+                    req
+                );
+
+                req.session.destroy((err) => {
+                    if (err) {
+                        console.error('Logout error:', err);
+                    }
+                    res.clearCookie('connect.sid');
+                    res.redirect('/admin/login');
+                });
+            } else {
+                res.redirect('/admin/login');
             }
-            res.redirect('/admin/login');
         } catch (error) {
             console.error('Admin logout error:', error);
             res.redirect('/admin/login');
@@ -60,16 +113,32 @@ const adminController = {
     // Dashboard
     dashboard: async (req, res) => {
         try {
-            // İstatistikleri çek
             const totalProducts = await Product.count({ where: { visible: 1 } });
             const totalCategories = await Category.count({ where: { visible: 1 } });
             const featuredProducts = await Product.count({
                 where: { visible: 1, featured: 1 }
             });
 
-            const currentMonth = new Date();
-            currentMonth.setDate(1);
-            currentMonth.setHours(0, 0, 0, 0);
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            weekStart.setHours(0, 0, 0, 0);
+
+            const weeklyNewProducts = await Product.count({
+                where: {
+                    createdAt: {
+                        [Op.gte]: weekStart
+                    }
+                }
+            });
+
+            const weeklyUpdates = await Logs.count({
+                where: {
+                    action: Logs.ACTIONS.UPDATE,
+                    createdAt: {
+                        [Op.gte]: weekStart
+                    }
+                }
+            });
 
             const recentLogs = await Logs.findAll({
                 limit: 10,
@@ -85,27 +154,6 @@ const adminController = {
                 }
             });
 
-            const weekStart = new Date();
-            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-            weekStart.setHours(0, 0, 0, 0);
-
-            const weeklyNewProducts = await Product.count({
-                where: {
-                    createdAt: {
-                        [Op.gte]: weekStart
-                    }
-                }
-            });
-
-            const weeklyLogs = await Logs.count({
-                where: {
-                    createdAt: {
-                        [Op.gte]: weekStart
-                    }
-                }
-            });
-
-            // 🔹 Site ayarlarını çek
             const settingsArray = await Settings.findAll();
             const settings = {};
             settingsArray.forEach(setting => {
@@ -117,15 +165,14 @@ const adminController = {
                 layout: 'admin/layout',
                 currentPage: 'dashboard',
                 admin: req.session.admin,
-                settings, // 🔹 Settings'i ekle
+                settings,
                 stats: {
                     totalProducts,
                     totalCategories,
                     featuredProducts,
-                    monthlyViews: 1234,
                     weeklyNewProducts,
-                    weeklyPageViews: weeklyLogs * 10,
-                    weeklyFavorites: Math.floor(Math.random() * 100)
+                    weeklyUpdates,
+                    monthlyViews: 0
                 },
                 recentLogs
             });
@@ -135,7 +182,9 @@ const adminController = {
             res.status(500).render('admin/error', {
                 title: 'Hata',
                 layout: 'admin/layout',
-                message: 'Dashboard yüklenirken hata oluştu'
+                currentPage: 'dashboard',
+                message: 'Dashboard yüklenirken hata oluştu',
+                admin: req.session.admin
             });
         }
     }

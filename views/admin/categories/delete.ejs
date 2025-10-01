@@ -1,147 +1,166 @@
 <div class="content-header">
-    <h2 class="content-title">
-        <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
-        Kategori Sil: <%= category.name %>
-    </h2>
-    <a href="/admin/categories" class="btn-furniture" style="background: #6c757d; color: white;">
-        <i class="fas fa-arrow-left"></i>
-        Geri Dön
-    </a>
+  <h2 class="content-title">
+    <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+    Kategori Sil: <%= category.name %>
+  </h2>
+  <a href="/admin/categories" class="btn-furniture" style="background: #6c757d; color: white;">
+    <i class="fas fa-arrow-left"></i>
+    Geri Dön
+  </a>
 </div>
 
-<% if (typeof error !=='undefined' && error==='no_target' ) { %>
-    <div class="alert alert-danger">
-        <i class="fas fa-exclamation-circle"></i>
-        Bu kategoride ürünler var. Lütfen ürünlerin taşınacağı kategoriyi seçin.
-    </div>
-    <% } %>
+<% if (typeof error !== 'undefined' && error === 'no_target') { %>
+<div class="alert alert-danger">
+  <i class="fas fa-exclamation-circle"></i>
+  Bu kategoride ürünler var. Lütfen ürünlerin taşınacağı kategoriyi seçin.
+</div>
+<% } %>
 
-        <% if (typeof error !=='undefined' && error==='invalid_target' ) { %>
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle"></i>
-                Geçersiz hedef kategori seçildi.
+<% if (typeof error !== 'undefined' && error === 'invalid_target') { %>
+<div class="alert alert-danger">
+  <i class="fas fa-exclamation-circle"></i>
+  Geçersiz hedef kategori seçildi.
+</div>
+<% } %>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card mb-4" style="border: 2px solid rgba(220, 53, 69, 0.3); border-radius: 10px;">
+      <div class="card-body" style="background: rgba(248, 215, 218, 0.3);">
+        <h5 class="card-title" style="color: #dc3545; margin-bottom: 20px;">
+          <i class="fas fa-exclamation-triangle"></i> Uyarı
+        </h5>
+
+        <% if (productCount > 0) { %>
+        <p style="font-size: 1.1rem; color: var(--espresso); margin-bottom: 20px;">
+          <strong>"<%= category.name %>"</strong> kategorisinde
+          <strong style="color: #dc3545;"><%= productCount %> adet ürün</strong>
+          <% if (childCount > 0) { %>
+          ve <strong style="color: #dc3545;"><%= childCount %> adet alt kategori</strong>
+          <% } %>
+          bulunmaktadır.
+        </p>
+
+        <div class="alert alert-warning">
+          <i class="fas fa-info-circle"></i>
+          Kategoriyi silmeden önce ürünlerin<% if (childCount > 0) { %> ve alt kategorilerin<% } %> başka bir kategoriye taşınması gerekiyor.
+        </div>
+
+        <form action="/admin/categories/<%= category.id %>/delete" method="POST">
+          <div class="mb-4">
+            <label for="move_to_category" class="form-label" style="font-weight: 600; color: var(--walnut); font-size: 1.1rem;">
+              Ürünler<% if (childCount > 0) { %> ve Alt Kategoriler<% } %> Hangi Kategoriye Taşınsın? <span style="color: red;">*</span>
+            </label>
+
+            <% if (otherCategories && otherCategories.length > 0) { %>
+            <select class="form-control" id="move_to_category" name="move_to_category" required style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; padding: 12px; font-size: 1rem;">
+              <option value="">Kategori Seçin...</option>
+              <% otherCategories.forEach(cat => { %>
+              <option value="<%= cat.id %>"><%= cat.name %></option>
+              <% }) %>
+            </select>
+
+            <% if (childCount > 0) { %>
+            <small class="text-muted d-block mt-2">
+              <i class="fas fa-info-circle"></i>
+              <%= productCount %> ürün ve <%= childCount %> alt kategori seçilen kategoriye taşınacaktır.
+            </small>
+            <% } %>
+            <% } else { %>
+            <div class="alert alert-danger mt-3">
+              <i class="fas fa-exclamation-circle"></i>
+              Başka kategori yok! Önce yeni bir kategori oluşturmalısınız.
             </div>
             <% } %>
+          </div>
 
-                <div class="row">
-                    <div class="col-lg-8">
-                        <div class="card mb-4" style="border: 2px solid rgba(220, 53, 69, 0.3); border-radius: 10px;">
-                            <div class="card-body" style="background: rgba(248, 215, 218, 0.3);">
-                                <h5 class="card-title" style="color: #dc3545; margin-bottom: 20px;">
-                                    <i class="fas fa-exclamation-triangle"></i> Uyarı
-                                </h5>
+          <% if (otherCategories && otherCategories.length > 0) { %>
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-danger btn-lg">
+              <i class="fas fa-trash"></i>
+              <% if (childCount > 0) { %>
+              Ürünleri ve Alt Kategorileri Taşı, Kategoriyi Sil
+              <% } else { %>
+              Ürünleri Taşı ve Kategoriyi Sil
+              <% } %>
+            </button>
+            <a href="/admin/categories" class="btn btn-secondary btn-lg">
+              <i class="fas fa-times"></i>
+              İptal
+            </a>
+          </div>
+          <% } %>
+        </form>
+        <% } else { %>
+        <p style="font-size: 1.1rem; color: var(--espresso); margin-bottom: 20px;">
+          <strong>"<%= category.name %>"</strong> kategorisini silmek istediğinizden emin misiniz?
+        </p>
 
-                                <% if (productCount> 0) { %>
-                                    <p style="font-size: 1.1rem; color: var(--espresso); margin-bottom: 20px;">
-                                        <strong>"<%= category.name %>"</strong> kategorisinde
-                                        <strong style="color: #dc3545;">
-                                            <%= productCount %> adet ürün
-                                        </strong> bulunmaktadır.
-                                    </p>
+        <% if (childCount > 0) { %>
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          Bu kategorinin <strong><%= childCount %> adet alt kategorisi</strong> var.
+          Bunlar otomatik olarak ana kategori yapılacaktır.
+        </div>
+        <% } else { %>
+        <div class="alert alert-success">
+          <i class="fas fa-check-circle"></i>
+          Bu kategoride hiç ürün yok, güvenle silebilirsiniz.
+        </div>
+        <% } %>
 
-                                    <div class="alert alert-warning">
-                                        <i class="fas fa-info-circle"></i>
-                                        Kategoriyi silmeden önce bu ürünlerin başka bir kategoriye taşınması gerekiyor.
-                                    </div>
+        <form action="/admin/categories/<%= category.id %>/delete" method="POST">
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-danger btn-lg">
+              <i class="fas fa-trash"></i>
+              Kategoriyi Sil
+            </button>
+            <a href="/admin/categories" class="btn btn-secondary btn-lg">
+              <i class="fas fa-times"></i>
+              İptal
+            </a>
+          </div>
+        </form>
+        <% } %>
+      </div>
+    </div>
+  </div>
 
-                                    <form action="/admin/categories/<%= category.id %>/delete" method="POST">
-                                        <div class="mb-4">
-                                            <label for="move_to_category" class="form-label"
-                                                style="font-weight: 600; color: var(--walnut); font-size: 1.1rem;">
-                                                Ürünler Hangi Kategoriye Taşınsın? <span style="color: red;">*</span>
-                                            </label>
+  <div class="col-lg-4">
+    <div class="card" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
+      <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
+        <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
+          <i class="fas fa-info-circle"></i> Bilgi
+        </h5>
 
-                                            <% if (otherCategories && otherCategories.length> 0) { %>
-                                                <select class="form-control" id="move_to_category"
-                                                    name="move_to_category" required
-                                                    style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; padding: 12px; font-size: 1rem;">
-                                                    <option value="">Kategori Seçin...</option>
-                                                    <% otherCategories.forEach(cat=> { %>
-                                                        <option value="<%= cat.id %>">
-                                                            <%= cat.name %>
-                                                        </option>
-                                                        <% }) %>
-                                                </select>
-                                                <% } else { %>
-                                                    <div class="alert alert-danger mt-3">
-                                                        <i class="fas fa-exclamation-circle"></i>
-                                                        Başka kategori yok! Önce yeni bir kategori oluşturmalısınız.
-                                                    </div>
-                                                    <% } %>
-                                        </div>
+        <div class="mb-3">
+          <strong style="color: var(--walnut);">Kategori:</strong>
+          <p><%= category.name %></p>
+        </div>
 
-                                        <% if (otherCategories && otherCategories.length> 0) { %>
-                                            <div class="d-grid gap-2">
-                                                <button type="submit" class="btn btn-danger btn-lg">
-                                                    <i class="fas fa-trash"></i>
-                                                    Ürünleri Taşı ve Kategoriyi Sil
-                                                </button>
-                                                <a href="/admin/categories" class="btn btn-secondary btn-lg">
-                                                    <i class="fas fa-times"></i>
-                                                    İptal
-                                                </a>
-                                            </div>
-                                            <% } %>
-                                    </form>
-                                    <% } else { %>
-                                        <p style="font-size: 1.1rem; color: var(--espresso); margin-bottom: 20px;">
-                                            <strong>"<%= category.name %>"</strong> kategorisini silmek istediğinizden
-                                            emin misiniz?
-                                        </p>
+        <div class="mb-3">
+          <strong style="color: var(--walnut);">Ürün Sayısı:</strong>
+          <p style="font-size: 1.5rem; color: <%= productCount > 0 ? '#dc3545' : '#28a745' %>;">
+            <%= productCount %> adet
+          </p>
+        </div>
 
-                                        <div class="alert alert-success">
-                                            <i class="fas fa-check-circle"></i>
-                                            Bu kategoride hiç ürün yok, güvenle silebilirsiniz.
-                                        </div>
+        <% if (childCount > 0) { %>
+        <div class="mb-3">
+          <strong style="color: var(--walnut);">Alt Kategori Sayısı:</strong>
+          <p style="font-size: 1.5rem; color: #dc3545;">
+            <%= childCount %> adet
+          </p>
+        </div>
+        <% } %>
 
-                                        <form action="/admin/categories/<%= category.id %>/delete" method="POST">
-                                            <div class="d-grid gap-2">
-                                                <button type="submit" class="btn btn-danger btn-lg">
-                                                    <i class="fas fa-trash"></i>
-                                                    Kategoriyi Sil
-                                                </button>
-                                                <a href="/admin/categories" class="btn btn-secondary btn-lg">
-                                                    <i class="fas fa-times"></i>
-                                                    İptal
-                                                </a>
-                                            </div>
-                                        </form>
-                                        <% } %>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-4">
-                        <div class="card" style="border: 2px solid rgba(139, 69, 19, 0.1); border-radius: 10px;">
-                            <div class="card-body" style="background: rgba(247, 243, 233, 0.5);">
-                                <h5 class="card-title" style="color: var(--oak-brown); margin-bottom: 20px;">
-                                    <i class="fas fa-info-circle"></i> Bilgi
-                                </h5>
-
-                                <div class="mb-3">
-                                    <strong style="color: var(--walnut);">Kategori:</strong>
-                                    <p>
-                                        <%= category.name %>
-                                    </p>
-                                </div>
-
-                                <div class="mb-3">
-                                    <strong style="color: var(--walnut);">Ürün Sayısı:</strong>
-                                    <p
-                                        style="font-size: 1.5rem; color: <%= productCount > 0 ? '#dc3545' : '#28a745' %>;">
-                                        <%= productCount %> adet
-                                    </p>
-                                </div>
-
-                                <% if (category.description) { %>
-                                    <div class="mb-3">
-                                        <strong style="color: var(--walnut);">Açıklama:</strong>
-                                        <p>
-                                            <%= category.description %>
-                                        </p>
-                                    </div>
-                                    <% } %>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <% if (category.description) { %>
+        <div class="mb-3">
+          <strong style="color: var(--walnut);">Açıklama:</strong>
+          <p><%= category.description %></p>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>

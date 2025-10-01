@@ -58,13 +58,14 @@ const adminSettingsController = {
                 contact_email,
                 contact_phone,
                 contact_address,
+                about_us,  // ✅ YENİ
                 social_facebook,
                 social_instagram,
                 social_twitter,
                 social_linkedin
             } = req.body;
 
-            // Ayarları güncelle veya oluştur
+            // Ayarları güncelle
             const settingsToUpdate = {
                 site_name,
                 site_description,
@@ -72,6 +73,7 @@ const adminSettingsController = {
                 contact_email,
                 contact_phone,
                 contact_address,
+                about_us,  // ✅ YENİ
                 social_facebook,
                 social_instagram,
                 social_twitter,

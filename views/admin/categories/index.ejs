@@ -1,82 +1,186 @@
 <div class="content-header">
-    <h2 class="content-title">
-        <i class="fas fa-tags"></i>
-        Kategori Yönetimi
-    </h2>
-    <a href="/admin/categories/create" class="btn-furniture btn-primary-furniture">
-        <i class="fas fa-plus"></i>
-        Yeni Kategori
-    </a>
+  <h2 class="content-title">
+    <i class="fas fa-tags"></i>
+    Kategori Yönetimi
+  </h2>
+  <a href="/admin/categories/create" class="btn-furniture btn-primary-furniture">
+    <i class="fas fa-plus"></i>
+    Yeni Kategori
+  </a>
 </div>
 
-<% if (categories && categories.length> 0) { %>
-    <div class="table-responsive">
-        <table class="table furniture-table">
-            <thead>
-                <tr>
-                    <th>Kategori Adı</th>
-                    <th>Açıklama</th>
-                    <th>Ürün Sayısı</th>
-                    <th>Durum</th>
-                    <th>Oluşturulma</th>
-                    <th>İşlemler</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% categories.forEach(category=> { %>
-                    <tr>
-                        <td><strong>
-                                <%= category.name %>
-                            </strong></td>
-                        <td>
-                            <% if (category.description) { %>
-                                <%= category.description.substring(0, 60) %>
-                                    <%= category.description.length> 60 ? '...' : '' %>
-                                        <% } else { %>
-                                            <span class="text-muted">-</span>
-                                            <% } %>
-                        </td>
-                        <td>
-                            <span class="badge"
-                                style="background: var(--oak-brown); color: white; padding: 8px 12px; border-radius: 20px;">
-                                <%= category.productCount %> ürün
-                            </span>
-                        </td>
-                        <td>
-                            <% if (category.visible===1) { %>
-                                <span class="status-badge status-active">Aktif</span>
-                                <% } else { %>
-                                    <span class="status-badge status-inactive">Pasif</span>
-                                    <% } %>
-                        </td>
-                        <td>
-                            <%= new Date(category.createdAt).toLocaleDateString('tr-TR') %>
-                        </td>
-                        <td>
-                            <div class="btn-group">
-                                <a href="/admin/categories/<%= category.id %>/edit"
-                                    class="btn btn-sm btn-outline-primary" title="Düzenle">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="/admin/categories/<%= category.id %>/delete"
-                                    class="btn btn-sm btn-outline-danger" title="Sil">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    <% }) %>
-            </tbody>
-        </table>
-    </div>
-    <% } else { %>
-        <div class="text-center py-5">
-            <i class="fas fa-tags fa-5x mb-3" style="color: var(--walnut); opacity: 0.3;"></i>
-            <h4 style="color: var(--walnut);">Henüz kategori yok</h4>
-            <p class="text-muted">Yeni kategori eklemek için yukarıdaki butona tıklayın</p>
-            <a href="/admin/categories/create" class="btn-furniture btn-primary-furniture mt-3">
-                <i class="fas fa-plus"></i>
-                İlk Kategoriyi Ekle
+<% if (categories && categories.length > 0) { %>
+<div class="table-responsive">
+  <table class="table furniture-table">
+    <thead>
+      <tr>
+        <th>Kategori Adı</th>
+        <th>Üst Kategori</th>
+        <th>Açıklama</th>
+        <th>Ürün Sayısı</th>
+        <th>Durum</th>
+        <th>Oluşturulma</th>
+        <th>İşlemler</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% categories.forEach(category => { %>
+      <tr>
+        <td><strong><%= category.name %></strong></td>
+        <td>
+          <% if (category.parent) { %>
+          <span class="badge" style="background: var(--cedar); color: white; padding: 6px 10px; border-radius: 15px; font-size: 11px;">
+            <i class="fas fa-level-up-alt"></i>
+            <%= category.parent.name %>
+          </span>
+          <% } else { %>
+          <span class="badge" style="background: var(--pine-green); color: white; padding: 6px 10px; border-radius: 15px; font-size: 11px;">
+            <i class="fas fa-crown"></i> Ana Kategori
+          </span>
+          <% } %>
+        </td>
+        <td>
+          <% if (category.description) { %>
+          <%= category.description.substring(0, 60) %>
+          <%= category.description.length > 60 ? '...' : '' %>
+          <% } else { %>
+          <span class="text-muted">-</span>
+          <% } %>
+        </td>
+        <td>
+          <span class="badge" style="background: var(--oak-brown); color: white; padding: 8px 12px; border-radius: 20px;">
+            <%= category.productCount %> ürün
+          </span>
+        </td>
+        <td>
+          <% if (category.visible === 1) { %>
+          <span class="status-badge status-active">Aktif</span>
+          <% } else { %>
+          <span class="status-badge status-inactive">Pasif</span>
+          <% } %>
+        </td>
+        <td>
+          <%= new Date(category.createdAt).toLocaleDateString('tr-TR') %>
+        </td>
+        <td>
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-outline-secondary btn-parent" data-id="<%= category.id %>" data-name="<%= category.name %>" data-parent="<%= category.parent_id || '' %>" title="Üst Kategori">
+              <i class="fas fa-sitemap"></i>
+            </button>
+            <a href="/admin/categories/<%= category.id %>/edit" class="btn btn-sm btn-outline-primary" title="Düzenle">
+              <i class="fas fa-edit"></i>
             </a>
-        </div>
-        <% } %>
+            <a href="/admin/categories/<%= category.id %>/delete" class="btn btn-sm btn-outline-danger" title="Sil">
+              <i class="fas fa-trash"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } else { %>
+<div class="text-center py-5">
+  <i class="fas fa-tags fa-5x mb-3" style="color: var(--walnut); opacity: 0.3;"></i>
+  <h4 style="color: var(--walnut);">Henüz kategori yok</h4>
+  <p class="text-muted">Yeni kategori eklemek için yukarıdaki butona tıklayın</p>
+  <a href="/admin/categories/create" class="btn-furniture btn-primary-furniture mt-3">
+    <i class="fas fa-plus"></i>
+    İlk Kategoriyi Ekle
+  </a>
+</div>
+<% } %>
+
+<!-- Üst Kategori Dropdown -->
+<div id="parentDropdown" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; background: white; padding: 0; border-radius: 15px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); min-width: 450px; max-width: 90vw;">
+  <div style="background: linear-gradient(135deg, var(--oak-brown), var(--cedar)); color: white; padding: 20px; border-radius: 15px 15px 0 0;">
+    <h5 style="margin: 0; font-size: 18px;">
+      <i class="fas fa-sitemap"></i> Üst Kategori Seç
+    </h5>
+  </div>
+
+  <form id="parentForm" method="POST" style="padding: 25px;">
+    <p style="color: var(--walnut); font-weight: 600; margin-bottom: 15px; font-size: 15px;">
+      <span id="categoryName"></span> için üst kategori seçin:
+    </p>
+
+    <select class="form-select" name="parent_id" id="parentSelect" style="border: 2px solid rgba(139, 69, 19, 0.2); border-radius: 8px; margin-bottom: 15px; padding: 10px; font-size: 14px;">
+      <option value="">Ana Kategori (Üst Yok)</option>
+    </select>
+
+    <small class="text-muted d-block mb-3" style="font-size: 13px;">
+      <i class="fas fa-info-circle"></i> Ana kategori seçerseniz, bu kategori üst seviyede olur.
+    </small>
+
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button type="button" class="btn btn-secondary" onclick="closeParentDropdown()" style="padding: 8px 20px;">İptal</button>
+      <button type="submit" class="btn-furniture btn-primary-furniture" style="padding: 8px 20px;">
+        <i class="fas fa-save"></i> Kaydet
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Overlay -->
+<div id="parentOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9998;" onclick="closeParentDropdown()"></div>
+
+<script>
+  function closeParentDropdown() {
+    document.getElementById('parentDropdown').style.display = 'none';
+    document.getElementById('parentOverlay').style.display = 'none';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const parentDropdown = document.getElementById('parentDropdown');
+    const parentOverlay = document.getElementById('parentOverlay');
+    const parentForm = document.getElementById('parentForm');
+    const parentSelect = document.getElementById('parentSelect');
+    const categoryName = document.getElementById('categoryName');
+
+    let currentCategoryId = null;
+    let allCategories = <%- JSON.stringify(categories) %>;
+
+    document.querySelectorAll('.btn-parent').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        currentCategoryId = this.getAttribute('data-id');
+        const name = this.getAttribute('data-name');
+        const currentParent = this.getAttribute('data-parent');
+
+        categoryName.textContent = name;
+        parentForm.action = `/admin/categories/${currentCategoryId}/set-parent`;
+
+        parentSelect.innerHTML = '<option value="">Ana Kategori (Üst Yok)</option>';
+
+        allCategories.forEach(cat => {
+          if (cat.id != currentCategoryId && !isChildOf(cat.id, currentCategoryId)) {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            if (currentParent == cat.id) {
+              option.selected = true;
+            }
+            parentSelect.appendChild(option);
+          }
+        });
+
+        parentDropdown.style.display = 'block';
+        parentOverlay.style.display = 'block';
+
+        setTimeout(() => {
+          parentSelect.focus();
+        }, 100);
+      });
+    });
+
+    function isChildOf(checkId, parentId) {
+      const category = allCategories.find(c => c.id == checkId);
+      if (!category || !category.parent_id) return false;
+      if (category.parent_id == parentId) return true;
+      return isChildOf(category.parent_id, parentId);
+    }
+  });
+</script>
